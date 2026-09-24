@@ -4,7 +4,7 @@ Die YAML-Dateien liegen zusätzlich hier als gepflegte Kopien. GitHub führt nur
 
 ## Enthaltene Workflows
 
-- `ci.yml`: automatisch bei Push/PR; Preflight und Debug-Builds, **kein Deployment**.
+- `ci.yml`: ausschließlich manuell per `workflow_dispatch`; Preflight und Debug-Builds, **kein Deployment**.
 - `deploy-pages.yml`: ausschließlich `workflow_dispatch`; PWA-Release nur nach manueller Eingabe eines vorhandenen Version-Tags.
 - `release-both.yml`: ausschließlich `workflow_dispatch`; native Release-Artefakte nur manuell. Store-Upload standardmäßig aus.
 

@@ -4,7 +4,7 @@ Dieser Ordner enthält den bevorzugten **manuellen PWA/GitHub-Pages-Releaseweg**
 
 ## Grundregel
 
-Es gibt **keine automatischen Releases**. Normale Pushes und Tag-Pushes dürfen Tests auslösen, aber niemals deployen. Ein Release startet nur über **GitHub → Actions → Run workflow** und benötigt einen bereits vorhandenen Version-Tag.
+Es gibt **keine automatisch gestarteten GitHub Actions**. Pushes, Pull Requests und Tag-Pushes starten weder Tests noch Builds noch Deployments. Alles startet ausschließlich über **GitHub → Actions → Run workflow**.
 
 ## PWA
 
@@ -15,9 +15,9 @@ Es gibt **keine automatischen Releases**. Normale Pushes und Tag-Pushes dürfen 
 
 Details stehen in der globalen `README.md` unter **How to release** sowie in `PWA/README.md`.
 
-## CI
+## Manuelle Prüfungen
 
-`ci.yml` kann bei Push/PR automatisch prüfen und Debug-Artefakte bauen. CI besitzt keine Deployment-Aufgabe.
+`ci.yml` verwendet ausschließlich `workflow_dispatch`. Preflight und Debug-Builds laufen nur, wenn **Manual checks Android + iOS** bewusst über **Run workflow** gestartet wird.
 
 ## Optionale native Builds
 

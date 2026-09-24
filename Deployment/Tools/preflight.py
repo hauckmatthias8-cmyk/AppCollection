@@ -107,16 +107,26 @@ for doc in doc_files:
             errors.append(f"Privater UI-Text wurde in öffentliche Dokumentation kopiert: {doc.relative_to(ROOT)}")
 
 
-# Release-Sicherheitsregel: Deployments dürfen nur manuell per workflow_dispatch starten.
-for rel in [".github/workflows/deploy-pages.yml", ".github/workflows/release-both.yml",
-            "Deployment/Automation/workflows/deploy-pages.yml", "Deployment/Automation/workflows/release-both.yml"]:
-    wf = read(rel)
-    if re.search(r"(?m)^\s*push\s*:", wf):
-        errors.append(f"Release-Workflow enthält verbotenen Push-Trigger: {rel}")
-    if re.search(r"(?m)^\s*schedule\s*:", wf):
-        errors.append(f"Release-Workflow enthält verbotenen Zeitplan: {rel}")
+# GitHub-Actions-Sicherheitsregel: JEDER Workflow muss ausschließlich manuell startbar sein.
+# Damit führt weder Push, Pull Request, Tag, Zeitplan noch ein anderer Workflow automatisch etwas aus.
+auto_trigger_patterns = {
+    "push": r"(?m)^\s*push\s*:",
+    "pull_request": r"(?m)^\s*pull_request\s*:",
+    "pull_request_target": r"(?m)^\s*pull_request_target\s*:",
+    "schedule": r"(?m)^\s*schedule\s*:",
+    "workflow_run": r"(?m)^\s*workflow_run\s*:",
+    "repository_dispatch": r"(?m)^\s*repository_dispatch\s*:",
+}
+workflow_files = list((ROOT / ".github/workflows").glob("*.yml")) + list((ROOT / ".github/workflows").glob("*.yaml"))
+workflow_files += list((ROOT / "Deployment/Automation/workflows").glob("*.yml")) + list((ROOT / "Deployment/Automation/workflows").glob("*.yaml"))
+for path in workflow_files:
+    rel = str(path.relative_to(ROOT)).replace("\\", "/")
+    wf = path.read_text(encoding="utf-8", errors="replace")
+    for trigger, pattern in auto_trigger_patterns.items():
+        if re.search(pattern, wf):
+            errors.append(f"Workflow enthält verbotenen automatischen Trigger '{trigger}': {rel}")
     if "workflow_dispatch" not in wf:
-        errors.append(f"Release-Workflow ist nicht explizit manuell startbar: {rel}")
+        errors.append(f"Workflow ist nicht explizit manuell startbar: {rel}")
 
 for rel in ["Deployment/Tools/release.ps1", "Deployment/Tools/release.sh"]:
     helper = read(rel)

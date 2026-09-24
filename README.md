@@ -25,7 +25,7 @@ Multiplattform-Projekt mit einer gemeinsamen lokalen App-Codebasis. Der bevorzug
 - `Shared/www/` – gemeinsame App-Oberfläche und gesamte Fachlogik.
 - `Android/` – optionale native Android-WebView-Hülle, Paket `de.matthiashauck.appsammlung`.
 - `iOS/` – optionale native SwiftUI/WKWebView-Hülle, Bundle-ID `de.matthiashauck.appsammlung`.
-- `Deployment/` – manuelles PWA/GitHub-Pages-Deployment, optionale native Builds, CI, Datenschutz und Release-Plan.
+- `Deployment/` – ausschließlich manuell startbare Prüf-, Build- und Release-Workflows, Datenschutz und Release-Plan.
 
 Neue Mini-Apps werden grundsätzlich in `Shared/www/` ergänzt.
 
@@ -33,11 +33,17 @@ Neue Mini-Apps werden grundsätzlich in `Shared/www/` ergänzt.
 
 Die App-Funktionen benötigen keinen Backend-Server. In der bevorzugten PWA werden die statischen Dateien über GitHub Pages geladen und anschließend offline gecacht; Solver, Sudoku-Generator, Sudoku-Löser und Bildverarbeitung laufen auf dem Gerät.
 
-## Entwicklung und CI
+## Entwicklung und GitHub Actions
 
-Normale Git-Pushes veröffentlichen **keine** neue App-Version. `ci.yml` darf bei Push/PR automatisiert Tests und Debug-Builds ausführen; ein Deployment findet dabei nicht statt.
+**Es gibt keinerlei automatisch gestartete GitHub Action.** Ein normaler Push, Pull Request oder Tag startet weder Preflight noch Build noch Deployment. Alle Workflow-Dateien verwenden ausschließlich `workflow_dispatch` und müssen in GitHub unter **Actions → Run workflow** von Hand gestartet werden.
 
-PWA lokal: `Shared/www/index.html` über einen lokalen HTTP-Server öffnen.
+Für eine lokale Prüfung kann jederzeit bewusst ausgeführt werden:
+
+```bash
+python Deployment/Tools/preflight.py
+```
+
+Der Workflow **Manual checks Android + iOS** ist ebenfalls rein manuell und baut nur Testartefakte; er veröffentlicht nichts.
 
 ## How to release
 
@@ -48,13 +54,13 @@ Ein Release ist absichtlich ein manueller Vorgang. **Weder ein normaler Push noc
 Windows:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File Deployment/Tools/release.ps1 -Version 1.2.2 -BuildNumber 5
+powershell -ExecutionPolicy Bypass -File Deployment/Tools/release.ps1 -Version 1.2.3 -BuildNumber 5
 ```
 
 macOS/Linux:
 
 ```bash
-Deployment/Tools/release.sh 1.2.2 5
+Deployment/Tools/release.sh 1.2.3 5
 ```
 
 Das Skript setzt die gemeinsame Version und führt den Preflight aus. Es führt **kein** `git commit`, `git tag`, `git push` oder Deployment aus.
@@ -65,17 +71,17 @@ Das Skript setzt die gemeinsame Version und führt den Preflight aus. Es führt 
 git status
 git diff
 git add .
-git commit -m "Release v1.2.2"
+git commit -m "Release v1.2.3"
 git push origin main
 ```
 
-Der Push auf `main` kann CI-Tests auslösen, veröffentlicht aber nichts.
+Der Push auf `main` löst **keine** GitHub Action aus.
 
 ### 3. Version-Tag bewusst von Hand anlegen
 
 ```bash
-git tag -a v1.2.2 -m "Hauckis App-Sammlung v1.2.2"
-git push origin v1.2.2
+git tag -a v1.2.3 -m "Hauckis App-Sammlung v1.2.3"
+git push origin v1.2.3
 ```
 
 Auch dieser Tag-Push startet **kein** Release.
@@ -88,7 +94,7 @@ Auf GitHub:
 2. **Actions** öffnen.
 3. Workflow **Release PWA manually** auswählen.
 4. **Run workflow** wählen.
-5. Bei `version_tag` exakt `v1.2.2` eintragen.
+5. Bei `version_tag` exakt `v1.2.3` eintragen.
 6. Workflow manuell starten.
 
 Der Workflow checkt exakt diesen Tag aus, prüft, dass `VERSION` dazu passt, führt den Preflight aus und veröffentlicht erst danach `Shared/www/` nach GitHub Pages.
@@ -107,4 +113,4 @@ Falls irgendwann nötig: **Actions → Build native Android + iOS manually → R
 
 ## Version
 
-Aktueller Projektstand: **1.2.2 / Build 5**.
+Aktueller Projektstand: **1.2.3 / Build 5**.

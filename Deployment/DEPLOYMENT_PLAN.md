@@ -4,16 +4,17 @@
 
 Die installierbare PWA aus `Shared/www/` ist der Standard für iOS und Android. Es existiert **kein automatischer Release-Trigger**. Ein Release benötigt immer zwei bewusste Schritte: einen vorhandenen Version-Tag und anschließend einen manuellen Start des GitHub-Actions-Workflows.
 
-## 2. Was automatisch laufen darf
+## 2. Automatische Ausführung
 
-`ci.yml` darf bei Pushes und Pull Requests Preflight, Android-Debug-Build und iOS-Simulator-Build ausführen. Diese Jobs veröffentlichen nichts.
+Keine. Es gibt absichtlich **keinen** `push`, `pull_request`, `schedule`, `workflow_run` oder sonstigen automatischen Trigger in `.github/workflows/`. Auch der Preflight läuft auf GitHub nur nach einem manuellen **Run workflow**.
 
-## 3. Was niemals automatisch läuft
+## 3. Manuelle Ausführung
 
-- kein GitHub-Pages-Deployment bei Push auf `main`
-- kein Deployment bei Push eines `v*`-Tags
-- kein zeitgesteuerter/Cron-Release
-- kein automatischer Store-Upload
+- **Manual checks Android + iOS**: Preflight + Debug-Builds auf ausdrücklichen Wunsch.
+- **Release PWA manually**: PWA-Deployment eines bereits vorhandenen Version-Tags.
+- **Build native Android + iOS manually**: native Release-Artefakte; Store-Upload nur nach zusätzlicher expliziter Auswahl.
+
+Das Erstellen oder Pushen eines Tags startet selbst keinen Workflow.
 
 ## 4. Release-Ablauf
 

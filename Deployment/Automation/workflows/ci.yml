@@ -1,33 +1,32 @@
-name: CI Android + iOS
+name: Manual checks Android + iOS
 
 on:
-  push:
-    branches: ['**']
-  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   preflight:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: '22'
+          node-version: '24'
+          package-manager-cache: false
       - name: Preflight
         run: python Deployment/Tools/preflight.py
 
   android-debug:
     needs: preflight
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
@@ -39,7 +38,7 @@ jobs:
           gradle-version: '8.9'
       - name: Build Debug APK
         run: gradle -p Android --no-daemon :app:assembleDebug
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: android-debug-apk
           path: Android/app/build/outputs/apk/debug/app-debug.apk
@@ -48,7 +47,7 @@ jobs:
     needs: preflight
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Xcode-Version
         run: xcodebuild -version
       - name: Build iOS Simulator
@@ -65,7 +64,7 @@ jobs:
         run: |
           cd "$RUNNER_TEMP/DerivedData/Build/Products/Debug-iphonesimulator"
           ditto -c -k --sequesterRsrc --keepParent HauckisAppSammlung.app "$RUNNER_TEMP/HauckisAppSammlung-simulator.zip"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ios-simulator-app
           path: ${{ runner.temp }}/HauckisAppSammlung-simulator.zip

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version_tag:
-        description: 'Vorhandener Release-Tag, z. B. v1.2.2'
+        description: 'Vorhandener Release-Tag, z. B. v1.2.3'
         required: true
         type: string
 
@@ -19,10 +19,10 @@ concurrency:
 
 jobs:
   preflight:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Release-Tag auschecken
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.version_tag }}
           fetch-depth: 0
@@ -36,12 +36,13 @@ jobs:
           git show-ref --verify --quiet "refs/tags/$VERSION_TAG" || { echo "Tag $VERSION_TAG existiert nicht."; exit 1; }
           PROJECT_VERSION="$(tr -d '\r\n' < VERSION)"
           test "v$PROJECT_VERSION" = "$VERSION_TAG" || { echo "VERSION=$PROJECT_VERSION passt nicht zu $VERSION_TAG"; exit 1; }
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: '22'
+          node-version: '24'
+          package-manager-cache: false
       - name: Preflight
         run: python Deployment/Tools/preflight.py
 
@@ -50,10 +51,10 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Release-Tag auschecken
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.version_tag }}
           fetch-depth: 0

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version_tag:
-        description: 'Vorhandener Release-Tag, z. B. v1.2.2'
+        description: 'Vorhandener Release-Tag, z. B. v1.2.3'
         required: true
         type: string
       deploy_stores:
@@ -18,9 +18,9 @@ permissions:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.version_tag }}
           fetch-depth: 0
@@ -34,23 +34,24 @@ jobs:
           git show-ref --verify --quiet "refs/tags/$VERSION_TAG" || { echo "Tag $VERSION_TAG existiert nicht."; exit 1; }
           PROJECT_VERSION="$(tr -d '\r\n' < VERSION)"
           test "v$PROJECT_VERSION" = "$VERSION_TAG" || { echo "VERSION=$PROJECT_VERSION passt nicht zu $VERSION_TAG"; exit 1; }
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: '22'
+          node-version: '24'
+          package-manager-cache: false
       - run: python Deployment/Tools/preflight.py
 
   android-release:
     needs: validate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.version_tag }}
           fetch-depth: 0
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
@@ -79,7 +80,7 @@ jobs:
       - name: APK + AAB bauen
         run: gradle -p Android --no-daemon :app:assembleRelease :app:bundleRelease
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: android-release
           path: |
@@ -100,7 +101,7 @@ jobs:
     needs: validate
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.version_tag }}
           fetch-depth: 0
@@ -185,7 +186,7 @@ jobs:
           test -n "$IPA" || { echo 'Keine IPA erzeugt'; exit 1; }
           cp "$IPA" "$RUNNER_TEMP/Hauckis-App-Sammlung.ipa"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ios-release-ipa
           path: ${{ runner.temp }}/Hauckis-App-Sammlung.ipa
