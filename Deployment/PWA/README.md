@@ -12,7 +12,7 @@ Die App-Sammlung wird primär als installierbare PWA ausgeliefert. **Ein Push au
 
 1. Release-Version vorbereiten.
 2. Commit nach `main` pushen.
-3. Version-Tag, z. B. `v1.2.3`, manuell anlegen und pushen.
+3. Version-Tag, z. B. `v1.0.0`, manuell anlegen und pushen.
 4. GitHub → **Actions → Release PWA manually → Run workflow**.
 5. `version_tag` exakt auf den gewünschten Tag setzen.
 6. Workflow starten.
