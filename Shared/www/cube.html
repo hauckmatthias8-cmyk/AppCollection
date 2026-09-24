@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#0b1020">
+  
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Hauckis Apps">
+  <link rel="stylesheet" href="cube.css">
+  <title>Zauberwürfel-Löser</title>
+</head>
+<body>
+  <main class="shell">
+    <div class="app-topbar"><a class="home-link" href="index.html">‹ Bibliothek</a><span class="app-kicker">App 01</span></div>
+    <header class="hero">
+      <div class="logo">▦</div>
+      <div><h1>Zauberwürfel-Löser</h1><p>3×3×3 fotografieren, prüfen und lokal lösen.</p></div>
+    </header>
+    <nav class="steps"><button class="step active" data-view="scan">1 · Scannen</button><button class="step" data-view="check">2 · Prüfen</button><button class="step" data-view="solve">3 · Lösung</button></nav>
+    <section id="view-scan" class="view active">
+      <div class="card intro"><h2>Seiten aufnehmen</h2><p>Lege zuerst eine feste Orientierung fest: <b>Vorn</b> und <b>Oben</b>. Dann erfasse alle sechs Seiten. Dasselbe Foto darf mehrfach benutzt werden, wenn mehrere Seiten sichtbar sind.</p></div>
+      <div id="face-list" class="face-list"></div><button id="to-check" class="primary full" disabled>Farben prüfen</button>
+    </section>
+    <section id="view-check" class="view">
+      <div class="card intro"><h2>Erkennung prüfen</h2><p>Tippe zuerst unten auf eine Farbe und danach auf ein falsch erkanntes Feld. Die Mittelfelder sind fest.</p></div>
+      <div id="palette" class="palette"></div><div id="editor" class="editor"></div><div id="counts" class="card counts"></div>
+      <div class="actions"><button id="back-scan" class="secondary">Zurück</button><button id="solve-btn" class="primary">Würfel lösen</button></div>
+    </section>
+    <section id="view-solve" class="view">
+      <div class="card solved-card"><div class="okmark">✓</div><h2>Lösung gefunden</h2><p id="orientation-note"></p><div id="notation" class="notation"></div></div>
+      <div id="move-card" class="card move-card"><div id="move-progress" class="muted"></div><div id="move-face" class="move-face"></div><div id="move-arrow" class="move-arrow"></div><div id="move-text" class="move-text"></div></div>
+      <div class="actions"><button id="prev-move" class="secondary">← Zurück</button><button id="next-move" class="primary">Weiter →</button></div><button id="new-cube" class="ghost full">Neuen Würfel scannen</button>
+    </section>
+  </main>
+  <div id="scan-modal" class="modal hidden"><div class="modal-sheet"><div class="modal-head"><div><h2 id="modal-title">Seite</h2><p id="modal-help"></p></div><button id="close-modal" class="icon-btn">×</button></div><label class="camera-btn"><input id="photo-input" type="file" accept="image/*" capture="environment">📷 Foto aufnehmen / auswählen</label><div id="canvas-wrap" class="canvas-wrap hidden"><canvas id="photo-canvas"></canvas></div><p id="corner-status" class="muted">Noch kein Foto ausgewählt.</p><div class="actions"><button id="reset-corners" class="secondary" disabled>Ecken neu</button><button id="accept-face" class="primary" disabled>Seite übernehmen</button></div><p class="tiny">Tippe nacheinander auf die vier äußeren Ecken der sichtbaren Würfelseite. Danach kannst du jeden Punkt durch Antippen/Schieben korrigieren.</p></div></div>
+  <div id="busy" class="busy hidden"><div class="spinner"></div><div id="busy-text">Bitte warten …</div></div><div id="toast" class="toast hidden"></div>
+  <script src="cube.js"></script><script src="solve.js"></script><script src="cube-app.js"></script>
+  <script src="pwa.js"></script>
+</body>
+</html>

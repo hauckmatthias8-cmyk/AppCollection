@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#0a1020">
+  
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Hauckis Apps">
+  <link rel="stylesheet" href="sudoku.css"><title>Sudoku</title>
+</head>
+<body>
+  <div id="sudoku-splash" class="splash" role="button" tabindex="0" aria-label="Weiter"><div class="splash-heart">♥</div><div class="splash-text" data-doc-private="true">Für meine Muttimaus 😘</div><div class="splash-sub">Zum Weitergehen tippen</div></div>
+  <main class="sudoku-shell">
+    <div class="topbar"><a class="back-link" href="index.html">‹ Bibliothek</a><span class="kicker">App 02</span></div>
+    <header class="sudoku-head"><div class="sudoku-logo">9</div><div><h1>Sudoku</h1><p>Täglich, zufällig oder selbst eingegeben.</p></div></header>
+
+    <section id="sudoku-menu" class="screen active">
+      <div class="welcome-card"><div class="mini-grid">1<span></span>7<span></span>5</div><div><b>Was möchtest du machen?</b><span>Alle Sudokus und Lösungen werden vollständig auf dem Gerät berechnet.</span></div></div>
+      <div class="mode-list">
+        <button class="mode-card" data-mode="daily"><div class="mode-icon">☀</div><div><b>Sudoku des Tages</b><span>Für jedes Datum dasselbe eindeutig lösbare Sudoku.</span></div><i>›</i></button>
+        <button class="mode-card" data-mode="random"><div class="mode-icon">⟳</div><div><b>Zufälliges Sudoku</b><span>Jedes Mal neu erzeugt und eindeutig lösbar.</span></div><i>›</i></button>
+        <button class="mode-card" data-mode="manual"><div class="mode-icon">✎</div><div><b>Sudoku-Löser</b><span>Eigene Zahlen eingeben und Schritt für Schritt lösen.</span></div><i>›</i></button>
+      </div>
+    </section>
+
+    <section id="sudoku-game" class="screen">
+      <div class="game-head"><button id="game-back" class="small-btn">‹ Menü</button><div><h2 id="game-title">Sudoku</h2><div id="game-subtitle" class="subline"></div></div><button id="game-new" class="small-btn">Neu</button></div>
+      <div id="date-row" class="date-row hidden"><label for="daily-date">Datum</label><input id="daily-date" type="date"><button id="load-date" class="compact-primary">Laden</button></div>
+      <div id="manual-info" class="manual-info hidden"><b>Eigene Vorgabe</b><span>Trage Zahlen ein. Beim ersten Einzelschritt wird geprüft, ob genau eine Lösung existiert.</span></div>
+      <div class="board-wrap"><div id="sudoku-board" class="sudoku-board" aria-label="Sudoku Spielfeld"></div></div>
+      <div id="status" class="status">Wähle ein Feld und eine Zahl.</div>
+      <div id="number-pad" class="number-pad"></div>
+      <div class="game-actions"><button id="erase" class="action secondary">⌫ Löschen</button><button id="step-solve" class="action primary">Nächstes Feld lösen</button></div>
+      <button id="manual-edit" class="action ghost full hidden">Vorgabe wieder bearbeiten</button>
+    </section>
+  </main>
+  <div id="sudoku-busy" class="busy hidden"><div class="spinner"></div><div id="busy-label">Sudoku wird erzeugt …</div></div>
+  <div id="sudoku-toast" class="toast hidden"></div>
+  <script src="sudoku-core.js"></script><script src="sudoku-app.js"></script>
+  <script src="pwa.js"></script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+name: Release PWA manually
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: 'Vorhandener Release-Tag, z. B. v1.2.2'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-manual-release
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Release-Tag auschecken
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.version_tag }}
+          fetch-depth: 0
+      - name: Tag und Projektversion prüfen
+        shell: bash
+        env:
+          VERSION_TAG: ${{ inputs.version_tag }}
+        run: |
+          set -euo pipefail
+          [[ "$VERSION_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Ungültiger Version-Tag: $VERSION_TAG"; exit 1; }
+          git show-ref --verify --quiet "refs/tags/$VERSION_TAG" || { echo "Tag $VERSION_TAG existiert nicht."; exit 1; }
+          PROJECT_VERSION="$(tr -d '\r\n' < VERSION)"
+          test "v$PROJECT_VERSION" = "$VERSION_TAG" || { echo "VERSION=$PROJECT_VERSION passt nicht zu $VERSION_TAG"; exit 1; }
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Preflight
+        run: python Deployment/Tools/preflight.py
+
+  deploy:
+    needs: preflight
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Release-Tag auschecken
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.version_tag }}
+          fetch-depth: 0
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: Shared/www
+      - name: PWA veröffentlichen
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,29 @@
+# Build output
+Artifacts/
+**/build/
+Android/.gradle/
+Android/.gradle-dist/
+Android/local.properties
+
+# Signing / secrets
+Deployment/secrets/
+Android/keystore.properties
+*.jks
+*.keystore
+*.p12
+*.mobileprovision
+AuthKey_*.p8
+*.cer
+
+# Xcode
+**/DerivedData/
+*.xcarchive
+*.ipa
+*.dSYM
+xcuserdata/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
