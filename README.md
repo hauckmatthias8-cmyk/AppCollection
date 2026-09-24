@@ -54,13 +54,13 @@ Ein Release ist absichtlich ein manueller Vorgang. **Weder ein normaler Push noc
 Windows:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File Deployment/Tools/release.ps1 -Version 1.0.0 -BuildNumber 1
+powershell -ExecutionPolicy Bypass -File Deployment/Tools/release.ps1 -Version 1.0.1 -BuildNumber 2
 ```
 
 macOS/Linux:
 
 ```bash
-Deployment/Tools/release.sh 1.0.0 5
+Deployment/Tools/release.sh 1.0.1 2
 ```
 
 Das Skript setzt die gemeinsame Version und führt den Preflight aus. Es führt **kein** `git commit`, `git tag`, `git push` oder Deployment aus.
@@ -71,7 +71,7 @@ Das Skript setzt die gemeinsame Version und führt den Preflight aus. Es führt 
 git status
 git diff
 git add .
-git commit -m "Release v1.0.0"
+git commit -m "Release v1.0.1"
 git push origin main
 ```
 
@@ -80,8 +80,8 @@ Der Push auf `main` löst **keine** GitHub Action aus.
 ### 3. Version-Tag bewusst von Hand anlegen
 
 ```bash
-git tag -a v1.0.0 -m "Hauckis App-Sammlung v1.0.0"
-git push origin v1.0.0
+git tag -a v1.0.1 -m "Hauckis App-Sammlung v1.0.1"
+git push origin v1.0.1
 ```
 
 Auch dieser Tag-Push startet **kein** Release.
@@ -94,7 +94,7 @@ Auf GitHub:
 2. **Actions** öffnen.
 3. Workflow **Release PWA manually** auswählen.
 4. **Run workflow** wählen.
-5. Bei `version_tag` exakt `v1.0.0` eintragen.
+5. Bei `version_tag` exakt `v1.0.1` eintragen.
 6. Workflow manuell starten.
 
 Der Workflow checkt exakt diesen Tag aus, prüft, dass `VERSION` dazu passt, führt den Preflight aus und veröffentlicht erst danach `Shared/www/` nach GitHub Pages.
@@ -113,4 +113,4 @@ Falls irgendwann nötig: **Actions → Build native Android + iOS manually → R
 
 ## Version
 
-Aktueller Projektstand: **1.0.0 / Build 1**.
+Aktueller Projektstand: **1.0.1 / Build 2**.
