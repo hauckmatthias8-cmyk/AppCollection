@@ -59,9 +59,9 @@ jobs:
           ref: ${{ inputs.version_tag }}
           fetch-depth: 0
       - uses: actions/configure-pages@v6
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: Shared/www
       - name: PWA veröffentlichen
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

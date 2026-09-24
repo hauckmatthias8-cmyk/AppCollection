@@ -22,7 +22,7 @@ Die Android-App enthält bewusst **keine `INTERNET`-Berechtigung**. Zauberwürfe
 
 - App-Name: **Hauckis möglicherweise nützliche App-Sammlung**
 - Paketname: `de.matthiashauck.appsammlung`
-- Version: `1.0.1`
+- Version: `1.0.2`
 - Mindestversion: Android 10 / API 29
 - Ziel-SDK: Android 15 / API 35
 - Java 17

@@ -1,4 +1,4 @@
-const APP_VERSION = '1.0.1';
+const APP_VERSION = '1.0.2';
 const CACHE = `hauckis-apps-${APP_VERSION}`;
 const ASSETS = [
   './', './index.html', './collection.css', './pwa.js', './manifest.webmanifest', './version.json',
