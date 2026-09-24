@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version_tag:
-        description: 'Vorhandener Release-Tag, z. B. v1.0.0'
+        description: 'Vorhandener Release-Tag, z. B. v1.2.3'
         required: true
         type: string
 
@@ -58,10 +58,10 @@ jobs:
         with:
           ref: ${{ inputs.version_tag }}
           fetch-depth: 0
-      - uses: actions/configure-pages@v6
-      - uses: actions/upload-pages-artifact@v5
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: Shared/www
       - name: PWA veröffentlichen
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v4

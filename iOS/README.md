@@ -4,7 +4,7 @@ Native SwiftUI/WKWebView-Hülle für dieselbe lokale App unter `../Shared/www/`.
 
 - Bundle-ID: `de.matthiashauck.appsammlung`
 - Deployment Target: iOS 15+
-- Aktuelle Version: 1.0.2 / Build 3
+- Aktuelle Version: 1.2.1 / Build 4
 - Kamera- und Fotobibliothekzugriff nur für den Zauberwürfel-Löser
 - Externe Webnavigation im WKWebView gesperrt
 
