@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version_tag:
-        description: 'Vorhandener Release-Tag, z. B. v1.2.3'
+        description: 'Vorhandener Release-Tag, z. B. v1.0.0'
         required: true
         type: string
       deploy_stores:
