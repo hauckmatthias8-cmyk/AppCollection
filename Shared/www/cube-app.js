@@ -38,17 +38,17 @@ function renderFaceCards(){
 }
 renderFaceCards();
 
-const modal=$('#scan-modal'), input=$('#photo-input'), canvas=$('#photo-canvas'), ctx=canvas.getContext('2d',{willReadFrequently:true});
+const modal=$('#scan-modal'), cameraInput=$('#camera-input'), galleryInput=$('#gallery-input'), photoInputs=[cameraInput,galleryInput], canvas=$('#photo-canvas'), ctx=canvas.getContext('2d',{willReadFrequently:true});
 let currentFace=null,currentImage=null,cornerPoints=[],dragIndex=-1;
 function openScan(face){
-  currentFace=face; currentImage=null; cornerPoints=[]; dragIndex=-1; input.value='';
+  currentFace=face; currentImage=null; cornerPoints=[]; dragIndex=-1; photoInputs.forEach(i=>i.value='');
   const m=FACE_META.find(x=>x.key===face);$('#modal-title').textContent=`${m.name} (${face})`;$('#modal-help').textContent=m.help;
   $('#canvas-wrap').classList.add('hidden');$('#reset-corners').disabled=true;$('#accept-face').disabled=true;$('#corner-status').textContent='Noch kein Foto ausgewählt.';modal.classList.remove('hidden');
 }
 function closeScan(){modal.classList.add('hidden')}
 $('#close-modal').onclick=closeScan;modal.addEventListener('click',e=>{if(e.target===modal)closeScan()});
 
-input.addEventListener('change',()=>{
+function handlePhotoInput(input){
   const file=input.files?.[0];if(!file)return;
   const url=URL.createObjectURL(file),img=new Image();
   img.onload=()=>{
@@ -57,8 +57,9 @@ input.addEventListener('change',()=>{
     ctx.drawImage(img,0,0,canvas.width,canvas.height);currentImage=img;cornerPoints=[];
     $('#canvas-wrap').classList.remove('hidden');$('#reset-corners').disabled=false;updateCornerState();drawCanvas();URL.revokeObjectURL(url);
   };
-  img.onerror=()=>toast('Foto konnte nicht geladen werden.');img.src=url;
-});
+  img.onerror=()=>{URL.revokeObjectURL(url);toast('Foto konnte nicht geladen werden.')};img.src=url;
+}
+photoInputs.forEach(input=>input.addEventListener('change',()=>handlePhotoInput(input)));
 
 function ordered(pts){
   if(pts.length!==4)return pts;

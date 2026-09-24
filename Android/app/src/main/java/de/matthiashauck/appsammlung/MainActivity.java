@@ -83,14 +83,14 @@ public final class MainActivity extends Activity {
                                              FileChooserParams fileChooserParams) {
                 if (fileCallback != null) fileCallback.onReceiveValue(null);
                 fileCallback = callback;
-                return openImageChooser();
+                return openImageChooser(fileChooserParams != null && fileChooserParams.isCaptureEnabled());
             }
         });
 
         webView.loadUrl("file:///android_asset/www/index.html");
     }
 
-    private boolean openImageChooser() {
+    private boolean openImageChooser(boolean captureOnly) {
         Intent gallery = new Intent(Intent.ACTION_GET_CONTENT);
         gallery.addCategory(Intent.CATEGORY_OPENABLE);
         gallery.setType("image/*");
@@ -115,13 +115,17 @@ public final class MainActivity extends Activity {
             }
         }
 
-        Intent chooser = Intent.createChooser(gallery, "Foto aufnehmen oder auswählen");
-        if (!extraIntents.isEmpty()) {
-            chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents.toArray(new Intent[0]));
+        Intent launchIntent;
+        if (captureOnly && !extraIntents.isEmpty()) {
+            launchIntent = extraIntents.get(0);
+        } else {
+            // Ohne HTML-capture ist dies bewusst die vorhandene Foto-/Dateiauswahl.
+            // Die Kamera besitzt in der Oberfläche einen eigenen Button.
+            launchIntent = Intent.createChooser(gallery, "Vorhandenes Foto auswählen");
         }
 
         try {
-            startActivityForResult(chooser, REQUEST_FILE_CHOOSER);
+            startActivityForResult(launchIntent, REQUEST_FILE_CHOOSER);
             return true;
         } catch (Exception e) {
             if (fileCallback != null) {
