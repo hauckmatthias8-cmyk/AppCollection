@@ -57,11 +57,11 @@ function render(){
   renderPad();checkFinished();
 }
 function renderPad(){ui.pad.innerHTML='';const counts=Array(10).fill(0);state.board.forEach(n=>{if(n)counts[n]++});for(let n=1;n<=9;n++){const b=document.createElement('button');b.textContent=n;if(counts[n]>=9)b.classList.add('used');b.onclick=()=>putNumber(n);ui.pad.appendChild(b)}}
-function editableSelected(){if(state.selected==null)return false;if(state.mode==='manual'&&!state.manualLocked)return true;return !state.givens.has(state.selected)&&!state.hints.has(state.selected)}
+function editableSelected(){if(state.selected==null)return false;if(state.mode==='manual'&&!state.manualLocked)return true;return !state.givens.has(state.selected)}
 function refreshManualSolutionFromCurrentBoard(){if(state.mode!=='manual'||!state.manualLocked)return;const sols=Core.solveAll(state.board,2);state.solution=sols[0]||null;state.solutionCount=sols.length}
-function putNumber(n){if(!editableSelected()){showToast('Dieses Feld ist fest vorgegeben.');return}state.board[state.selected]=n;if(state.mode==='manual'){if(!state.manualLocked){state.solution=null;state.solutionCount=0}else refreshManualSolutionFromCurrentBoard()}saveDaily();render();advanceSelection()}
+function putNumber(n){if(!editableSelected()){showToast('Dieses Feld ist fest vorgegeben.');return}state.hints.delete(state.selected);state.board[state.selected]=n;if(state.mode==='manual'){if(!state.manualLocked){state.solution=null;state.solutionCount=0}else refreshManualSolutionFromCurrentBoard()}saveDaily();render();advanceSelection()}
 function advanceSelection(){if(state.selected==null)return;for(let k=1;k<=81;k++){const i=(state.selected+k)%81;if(!state.board[i]&&!state.givens.has(i)){state.selected=i;break}}render()}
-$('#erase').onclick=()=>{if(!editableSelected()){showToast('Dieses Feld kann nicht gelöscht werden.');return}state.board[state.selected]=0;if(state.mode==='manual'){if(!state.manualLocked){state.solution=null;state.solutionCount=0}else refreshManualSolutionFromCurrentBoard()}saveDaily();render()};
+$('#erase').onclick=()=>{if(!editableSelected()){showToast('Dieses Feld kann nicht gelöscht werden.');return}state.hints.delete(state.selected);state.board[state.selected]=0;if(state.mode==='manual'){if(!state.manualLocked){state.solution=null;state.solutionCount=0}else refreshManualSolutionFromCurrentBoard()}saveDaily();render()};
 function prepareManual(){
   if(state.manualLocked)return true;
   const bad=Core.conflicts(state.board);if(bad.size){state.selected=[...bad][0];render();setStatus('Die Vorgabe enthält einen Widerspruch. Markiertes Feld prüfen.','bad');return false}
