@@ -13,12 +13,13 @@ Multiplattform-Projekt mit einer gemeinsamen lokalen App-Codebasis. Der bevorzug
 
 ### App 02 – Sudoku
 
-- **Sudoku des Tages:** Datum auswählbar; dasselbe Datum erzeugt deterministisch dasselbe Rätsel.
-- Alle automatisch erzeugten Rätsel werden auf **genau eine Lösung** geprüft.
-- **Zufälliges Sudoku** mit eindeutig lösbaren Rätseln.
-- **Sudoku-Löser** für selbst eingegebene Vorgaben.
-- **Nächstes Feld lösen** in allen Sudoku-Modi.
-- Tagesfortschritt lokal gespeichert.
+- **Drei Schwierigkeitsstufen:** Leicht, Normal und Schwer. Normal entspricht der bisherigen Rätselstufe.
+- **Sudoku des Tages:** Datum auswählbar; Datum + Schwierigkeitsstufe erzeugen deterministisch dasselbe Rätsel.
+- **Leicht** und **Normal** werden auf genau eine Lösung geprüft; **Schwer** darf eine oder zwei Lösungen besitzen.
+- **Zufälliges Sudoku** in allen drei Schwierigkeitsstufen.
+- **Sudoku-Löser** für selbst eingegebene Vorgaben, auch wenn mehrere Lösungen möglich sind. In diesem Fall wird die erste aktuell mögliche Lösung bevorzugt.
+- **Markiertes Feld lösen:** Ist ein bearbeitbares Feld ausgewählt, löst der Einzelschritt-Löser genau dieses Feld; andernfalls wird das nächste freie Feld verwendet.
+- Tagesfortschritt wird pro Datum und Schwierigkeitsstufe lokal gespeichert.
 
 ## Projektstruktur
 
@@ -54,13 +55,13 @@ Ein Release ist absichtlich ein manueller Vorgang. **Weder ein normaler Push noc
 Windows:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File Deployment/Tools/release.ps1 -Version 1.1.1 -BuildNumber 8
+powershell -ExecutionPolicy Bypass -File Deployment/Tools/release.ps1 -Version 1.2.0 -BuildNumber 9
 ```
 
 macOS/Linux:
 
 ```bash
-Deployment/Tools/release.sh 1.1.1 8
+Deployment/Tools/release.sh 1.2.0 9
 ```
 
 Das Skript setzt die gemeinsame Version und führt den Preflight aus. Es führt **kein** `git commit`, `git tag`, `git push` oder Deployment aus.
@@ -71,7 +72,7 @@ Das Skript setzt die gemeinsame Version und führt den Preflight aus. Es führt 
 git status
 git diff
 git add .
-git commit -m "Release v1.1.1"
+git commit -m "Release v1.2.0"
 git push origin main
 ```
 
@@ -80,8 +81,8 @@ Der Push auf `main` löst **keine** GitHub Action aus.
 ### 3. Version-Tag bewusst von Hand anlegen
 
 ```bash
-git tag -a v1.1.1 -m "Hauckis App-Sammlung v1.1.1"
-git push origin v1.1.1
+git tag -a v1.2.0 -m "Hauckis App-Sammlung v1.2.0"
+git push origin v1.2.0
 ```
 
 Auch dieser Tag-Push startet **kein** Release.
@@ -94,7 +95,7 @@ Auf GitHub:
 2. **Actions** öffnen.
 3. Workflow **Release PWA manually** auswählen.
 4. **Run workflow** wählen.
-5. Bei `version_tag` exakt `v1.1.1` eintragen.
+5. Bei `version_tag` exakt `v1.2.0` eintragen.
 6. Workflow manuell starten.
 
 Der Workflow checkt exakt diesen Tag aus, prüft, dass `VERSION` dazu passt, führt den Preflight aus und veröffentlicht erst danach `Shared/www/` nach GitHub Pages.
@@ -113,4 +114,4 @@ Falls irgendwann nötig: **Actions → Build native Android + iOS manually → R
 
 ## Version
 
-Aktueller Projektstand: **1.1.1 / Build 8**.
+Aktueller Projektstand: **1.2.0 / Build 9**.

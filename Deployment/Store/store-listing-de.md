@@ -19,9 +19,10 @@ Hauckis App-Sammlung vereint kleine, möglicherweise nützliche Werkzeuge in ein
 Aktuell enthalten:
 
 - Zauberwürfel-Löser: 3×3×3 per Foto erfassen, Farben prüfen und lokal lösen.
-- Sudoku des Tages: Ein Datum erzeugt deterministisch ein eindeutig lösbares Sudoku.
-- Zufälliges Sudoku: Neue eindeutig lösbare Rätsel auf Knopfdruck.
-- Sudoku-Löser: Eigene Vorgaben eingeben und Schritt für Schritt lösen.
+- Sudoku des Tages: Drei Schwierigkeitsstufen; Datum und Stufe erzeugen deterministisch dasselbe Rätsel.
+- Zufälliges Sudoku: Neue Rätsel in Leicht, Normal oder Schwer auf Knopfdruck.
+- Leicht/Normal: eindeutig lösbar. Schwer: eine oder höchstens zwei Lösungen.
+- Sudoku-Löser: Eigene Vorgaben eingeben und das markierte Feld Schritt für Schritt lösen; bei mehrdeutigen Vorgaben wird die erste aktuell mögliche Lösung verwendet.
 
 Die Kernfunktionen arbeiten lokal auf dem Gerät. Die App enthält keine Werbung und keine
 Analytics-Komponente.

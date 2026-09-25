@@ -18,9 +18,19 @@
 
     <section id="sudoku-menu" class="screen active">
       <div class="welcome-card"><div><b>Was möchtest du machen?</b><span>Alle Sudokus und Lösungen werden vollständig auf dem Gerät berechnet.</span></div></div>
+      <div class="difficulty-card">
+        <div class="difficulty-title">Schwierigkeit</div>
+        <div class="difficulty-selector" role="group" aria-label="Sudoku-Schwierigkeit">
+          <button class="difficulty-btn" type="button" data-difficulty="easy" aria-pressed="false">Leicht</button>
+          <button class="difficulty-btn active" type="button" data-difficulty="normal" aria-pressed="true">Normal</button>
+          <button class="difficulty-btn" type="button" data-difficulty="hard" aria-pressed="false">Schwer</button>
+        </div>
+        <div id="difficulty-info" class="difficulty-info">Normal: ca. 32 Vorgaben · eindeutig lösbar</div>
+        <div class="difficulty-scope">Gilt für „Sudoku des Tages“ und „Zufälliges Sudoku“.</div>
+      </div>
       <div class="mode-list">
-        <button class="mode-card" data-mode="daily"><div class="mode-icon">☀</div><div><b>Sudoku des Tages</b><span>Für jedes Datum dasselbe eindeutig lösbare Sudoku.</span></div><i>›</i></button>
-        <button class="mode-card" data-mode="random"><div class="mode-icon">⟳</div><div><b>Zufälliges Sudoku</b><span>Jedes Mal neu erzeugt und eindeutig lösbar.</span></div><i>›</i></button>
+        <button class="mode-card" data-mode="daily"><div class="mode-icon">☀</div><div><b>Sudoku des Tages</b><span>Für Datum und Schwierigkeitsstufe immer dasselbe Sudoku.</span></div><i>›</i></button>
+        <button class="mode-card" data-mode="random"><div class="mode-icon">⟳</div><div><b>Zufälliges Sudoku</b><span>Jedes Mal neu erzeugt – in der gewählten Schwierigkeitsstufe.</span></div><i>›</i></button>
         <button class="mode-card" data-mode="manual"><div class="mode-icon">✎</div><div><b>Sudoku-Löser</b><span>Eigene Zahlen eingeben und Schritt für Schritt lösen.</span></div><i>›</i></button>
       </div>
     </section>
@@ -28,11 +38,11 @@
     <section id="sudoku-game" class="screen">
       <div class="game-head"><button id="game-back" class="small-btn">‹ Menü</button><div><h2 id="game-title">Sudoku</h2><div id="game-subtitle" class="subline"></div></div><button id="game-new" class="small-btn">Neu</button></div>
       <div id="date-row" class="date-row hidden"><label for="daily-date">Datum</label><input id="daily-date" type="date"><button id="load-date" class="compact-primary">Laden</button></div>
-      <div id="manual-info" class="manual-info hidden"><b>Eigene Vorgabe</b><span>Trage Zahlen ein. Beim ersten Einzelschritt wird geprüft, ob genau eine Lösung existiert.</span></div>
+      <div id="manual-info" class="manual-info hidden"><b>Eigene Vorgabe</b><span>Trage Zahlen ein. Der Löser akzeptiert auch mehrdeutige Vorgaben und bevorzugt dann die erste aktuell mögliche Lösung.</span></div>
       <div class="board-wrap"><div id="sudoku-board" class="sudoku-board" aria-label="Sudoku Spielfeld"></div></div>
       <div id="status" class="status">Wähle ein Feld und eine Zahl.</div>
       <div id="number-pad" class="number-pad"></div>
-      <div class="game-actions"><button id="erase" class="action secondary">⌫ Löschen</button><button id="step-solve" class="action primary">Nächstes Feld lösen</button></div>
+      <div class="game-actions"><button id="erase" class="action secondary">⌫ Löschen</button><button id="step-solve" class="action primary">Markiertes Feld lösen</button></div>
       <button id="manual-edit" class="action ghost full hidden">Vorgabe wieder bearbeiten</button>
     </section>
   </main>
