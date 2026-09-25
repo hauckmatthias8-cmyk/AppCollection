@@ -3,7 +3,7 @@
   let reloaded = false;
   window.addEventListener('load', async () => {
     try {
-      const registration = await navigator.serviceWorker.register('./sw.js', {scope:'./'});
+      const registration = await navigator.serviceWorker.register('./sw.js', {scope:'./', updateViaCache:'none'});
       registration.update().catch(() => {});
     } catch (err) {
       console.warn('Service Worker konnte nicht registriert werden:', err);
