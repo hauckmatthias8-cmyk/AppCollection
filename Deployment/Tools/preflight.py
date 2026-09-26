@@ -147,6 +147,39 @@ if "ref.searchUrl=youtubeSearchUrl(canonical.title,canonical.artist)" not in mus
 if "req.youtubeReference=applyCanonicalYouTubeSearch" not in music_js:
     errors.append("Musikfinder: korrigierte YouTube-Suchlinks fehlen in der Bundle-/Listensuche.")
 
+
+# Internet Archive darf in der Musiksuche keine reinen Bild-/Scan-Funde liefern.
+for token in ["archiveAudioFiles", "bestArchiveAudioFile", "mapWithConcurrency", "Internet Archive · Audio geprüft"]:
+    if token not in music_js:
+        errors.append(f"Musikfinder: Internet-Archive-Audioprüfung fehlt: {token}")
+if "imageOnly=" not in music_js:
+    errors.append("Musikfinder: Internet-Archive-Filter gegen reine Bild-/Coverdateien fehlt.")
+if "sourceUrl:c.audioUrl" not in music_js:
+    errors.append("Musikfinder: erweiterte Internet-Archive-Suche verlinkt nicht direkt auf validiertes Audio.")
+
+
+# Quellenfilter für die erweiterte Suche
+for source_id in ["itunes","freetouse","ccmixter","commons","archive","youtube"]:
+    if f'data-advanced-source="{source_id}"' not in music_html:
+        errors.append(f"Musikfinder: Quellenfilter fehlt: {source_id}")
+for token in ["ADVANCED_SOURCE_DEFS","selectedAdvancedSources","setAllAdvancedSources","loadAdvancedSources"]:
+    if token not in music_js:
+        errors.append(f"Musikfinder: Quellenfilter-Logik fehlt: {token}")
+if "Bitte mindestens eine Quelle für die erweiterte Suche auswählen." not in music_js:
+    errors.append("Musikfinder: erweiterte Suche behandelt leere Quellenauswahl nicht.")
+
+
+# Erweiterte Suche: mehrere Titel, einer pro Zeile.
+if "<textarea id=\"advanced-query-input\"" not in music_html:
+    errors.append("Musikfinder: Titel-Mehrfachsuche verwendet kein mehrzeiliges Eingabefeld.")
+for token in ["parseAdvancedTitleQueries","renderMultiTitleDiscovery","Interpreten für alle Titel finden"]:
+    if token not in music_js:
+        errors.append(f"Musikfinder: Mehrfach-Titelsuche fehlt: {token}")
+if "for(let i=0;i<queries.length;i++)" not in music_js:
+    errors.append("Musikfinder: Mehrfach-Titelsuche verarbeitet die Titel nicht einzeln.")
+if "if(i<queries.length-1) await sleep(220)" not in music_js:
+    errors.append("Musikfinder: Mehrfach-Titelsuche drosselt lange Titellisten nicht.")
+
 # PWA-Grundprüfung
 manifest = read("Shared/www/manifest.webmanifest")
 if FULL_NAME not in manifest:

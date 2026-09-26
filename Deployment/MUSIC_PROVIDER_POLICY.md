@@ -45,3 +45,17 @@ Die erweiterte Suche darf aus den bestehenden öffentlichen Quellen Interpret-/T
 YouTube-Ergebnisse dürfen hierfür nur berücksichtigt werden, wenn sie als professionelle Musikquelle plausibel sind:
 verifizierter Kanal, `- Topic`-/VEVO-Kanal und/oder strukturierte `musicTracks`-Metadaten. Normale unbestätigte
 Benutzer-/Laienvideos dürfen nicht in die Ergebnisliste aufgenommen werden.
+
+## Quellenfilter der erweiterten Suche
+
+Die erweiterte Suche bietet für jede aktuell unterstützte Quelle einen eigenen Schalter.
+Standardmäßig sind alle Quellen aktiviert. Die Auswahl darf lokal im Browser gespeichert
+werden und beeinflusst ausschließlich die erweiterte Suche; Einzelsuche und Bundle-Suche
+verwenden weiterhin ihre regulären Quellen.
+
+## Mehrere Titel in der erweiterten Suche
+
+Im Modus `Titel → Interpreten` dürfen mehrere Titel gleichzeitig eingegeben werden, jeweils
+einer pro Zeile. Die App verarbeitet diese nacheinander, dedupliziert identische Titelzeilen
+und stellt die Interpret-Ergebnisse pro eingegebenem Titel getrennt dar. Der Quellenfilter gilt
+für alle Titel dieses Suchlaufs.

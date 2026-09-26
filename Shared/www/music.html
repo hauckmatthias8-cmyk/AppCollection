@@ -69,15 +69,50 @@
           <button id="advanced-artist-btn" class="advanced-kind-btn" type="button">Interpret → Titel</button>
         </div>
         <label>
-          <span id="advanced-query-label">Titel</span>
-          <input id="advanced-query-input" type="text" autocomplete="off" autocapitalize="words"
-                 placeholder="z. B. Hallelujah">
+          <span id="advanced-query-label">Titel (einer pro Zeile)</span>
+          <textarea id="advanced-query-input" rows="6" autocomplete="off" autocapitalize="words"
+                    placeholder="z. B. Hallelujah&#10;The Sound of Silence&#10;Nothing Else Matters"></textarea>
         </label>
         <p id="advanced-help" class="format-hint">
-          Findet alle unterschiedlichen Interpreten, die zu diesem Titel in den eingebundenen Quellen gefunden werden.
+          Findet für jeden eingegebenen Titel alle unterschiedlichen Interpreten, die in den eingebundenen Quellen gefunden werden. Ein Titel pro Zeile.
           YouTube-Beiträge werden nur übernommen, wenn sie aus einem verifizierten/Topic/VEVO-Kanal stammen oder
           strukturierte Musik-Metadaten liefern; typische Laienvideos werden nicht aufgenommen.
         </p>
+        <fieldset class="source-filter">
+          <div class="source-filter-head">
+            <legend>Quellen</legend>
+            <div class="source-filter-actions">
+              <button id="advanced-sources-all" type="button">Alle</button>
+              <button id="advanced-sources-none" type="button">Keine</button>
+            </div>
+          </div>
+          <div class="source-filter-grid">
+            <label class="source-check">
+              <input type="checkbox" data-advanced-source="itunes" checked>
+              <span>Apple / iTunes</span>
+            </label>
+            <label class="source-check">
+              <input type="checkbox" data-advanced-source="freetouse" checked>
+              <span>Free To Use</span>
+            </label>
+            <label class="source-check">
+              <input type="checkbox" data-advanced-source="ccmixter" checked>
+              <span>ccMixter</span>
+            </label>
+            <label class="source-check">
+              <input type="checkbox" data-advanced-source="commons" checked>
+              <span>Wikimedia Commons</span>
+            </label>
+            <label class="source-check">
+              <input type="checkbox" data-advanced-source="archive" checked>
+              <span>Internet Archive</span>
+            </label>
+            <label class="source-check">
+              <input type="checkbox" data-advanced-source="youtube" checked>
+              <span>YouTube</span>
+            </label>
+          </div>
+        </fieldset>
       </div>
 
       <button id="search-btn" class="primary">3 günstigste Treffer suchen</button>

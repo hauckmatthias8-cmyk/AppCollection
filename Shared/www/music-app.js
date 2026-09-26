@@ -16,6 +16,9 @@
   const advancedQueryInput = $('#advanced-query-input');
   const advancedQueryLabel = $('#advanced-query-label');
   const advancedHelp = $('#advanced-help');
+  const advancedSourceInputs = [...document.querySelectorAll('[data-advanced-source]')];
+  const advancedSourcesAllBtn = $('#advanced-sources-all');
+  const advancedSourcesNoneBtn = $('#advanced-sources-none');
   const searchBtn = $('#search-btn');
   const statusBox = $('#status');
   const resultsBox = $('#results');
@@ -756,6 +759,63 @@
     return String(s || '').replace(/([+\-&|!(){}\[\]^"~*?:\\/])/g, '\\$1');
   }
 
+  function archiveAudioFiles(meta){
+    return (meta?.files || []).filter(f => {
+      const name=String(f?.name || '');
+      const fmt=String(f?.format || '').toLowerCase();
+      const mime=String(f?.mime || '').toLowerCase();
+
+      const extOk=/\.(mp3|flac|ogg|oga|wav|m4a|aac|opus)$/i.test(name);
+      const formatOk=/\b(mp3|flac|ogg|vorbis|wav|wave|mpeg4 audio|m4a|aac|opus)\b/.test(fmt);
+      const mimeOk=mime.startsWith('audio/');
+
+      const imageOnly=/\.(jpg|jpeg|png|gif|webp|tif|tiff|bmp|jp2)$/i.test(name) ||
+                      /\b(jpeg|png|gif|image|thumbnail|cover art|scandata)\b/.test(fmt);
+      const excluded=/\.(zip|torrent|xml|json|sqlite|txt|pdf)$/i.test(name);
+
+      return !imageOnly && !excluded && (extOk || formatOk || mimeOk);
+    });
+  }
+
+  function archiveDirectFileUrl(identifier, name){
+    return `https://archive.org/download/${encodeURIComponent(identifier)}/${String(name || '').split('/').map(encodeURIComponent).join('/')}`;
+  }
+
+  function bestArchiveAudioFile(meta, fallbackTitle='', fallbackArtist='', wantedTitle='', wantedArtist=''){
+    const files=archiveAudioFiles(meta);
+    if(!files.length) return null;
+
+    return files
+      .map(f=>{
+        const title=String(f?.title || f?.track || f?.name || fallbackTitle)
+          .replace(/\.[a-z0-9]{2,5}$/i,'')
+          .trim();
+        const artist=String(f?.artist || f?.creator || fallbackArtist || '').trim();
+        const score=(wantedTitle || wantedArtist)
+          ? scoreCandidate({title:title || fallbackTitle,artist:artist || fallbackArtist},wantedTitle,wantedArtist)
+          : 0;
+        const original=String(f?.source || '').toLowerCase()==='original' ? 1 : 0;
+        const lossless=/\.(flac|wav)$/i.test(String(f?.name || '')) || /\b(flac|wav|wave)\b/i.test(String(f?.format || '')) ? 1 : 0;
+        return {file:f,title,artist,score,original,lossless};
+      })
+      .sort((a,b)=>b.score-a.score || b.original-a.original || b.lossless-a.lossless)[0];
+  }
+
+  async function mapWithConcurrency(items, limit, worker){
+    const out=new Array(items.length);
+    let next=0;
+    async function run(){
+      while(true){
+        const i=next++;
+        if(i>=items.length) return;
+        try{ out[i]=await worker(items[i],i); }
+        catch(_){ out[i]=null; }
+      }
+    }
+    await Promise.all(Array.from({length:Math.min(limit,items.length)},()=>run()));
+    return out;
+  }
+
   async function searchArchive(wantedTitle, wantedArtist, options={}) {
     const t = luceneEscape(wantedTitle);
     const a = luceneEscape(wantedArtist);
@@ -794,13 +854,7 @@
       const baseArtist = Array.isArray(md.creator) ? md.creator.join(', ') : (md.creator || doc._creator || '');
       const baseTitle = md.title || doc.title || '';
 
-      const audioFiles = (meta?.files || []).filter(f => {
-        const name = String(f.name || '');
-        const fmt = String(f.format || '').toLowerCase();
-        const extOk = /\.(mp3|flac|ogg|oga|wav|m4a)$/i.test(name);
-        const formatOk = /mp3|flac|ogg|vorbis|wav|mpeg4 audio|m4a/.test(fmt);
-        return (extOk || formatOk) && !/\.(zip|torrent)$/i.test(name);
-      });
+      const audioFiles = archiveAudioFiles(meta);
 
       const preferred = audioFiles
         .map(f => {
@@ -822,7 +876,7 @@
           artist:x.artist || baseArtist,
           license:stripHtml(license) || 'Freie Lizenz',
           licenseUrl:String(md.licenseurl || doc.licenseurl || ''),
-          downloadUrl:`https://archive.org/download/${encodeURIComponent(doc.identifier)}/${name.split('/').map(encodeURIComponent).join('/')}`,
+          downloadUrl:archiveDirectFileUrl(doc.identifier,name),
           sourcePage:`https://archive.org/details/${encodeURIComponent(doc.identifier)}`,
           mime:String(x.file.format || ''),
           fileName:name,
@@ -1262,21 +1316,98 @@
 
     let data;
     try{ data=await fetchJson(u.toString(),15000); }catch(_){ return []; }
-    const out=[];
+
+    // First reject obviously bad metadata matches without downloading item metadata.
+    const candidates=[];
     for(const doc of data?.response?.docs || []){
-      const title=Array.isArray(doc.title)?doc.title[0]:String(doc.title || '');
-      const artists=arrayify(doc.creator).flatMap(x=>String(x || '').split(/\s*;\s*/)).filter(Boolean);
-      if(!title || !artists.length) continue;
+      const title=Array.isArray(doc.title)?String(doc.title[0] || ''):String(doc.title || '');
+      const artists=arrayify(doc.creator)
+        .flatMap(x=>String(x || '').split(/\s*;\s*/))
+        .map(x=>x.trim())
+        .filter(Boolean);
+      if(!doc.identifier || !title || !artists.length) continue;
+
+      const score=kind==='title-artists'
+        ? similarity(title,query)
+        : Math.max(...artists.map(a=>similarity(a,query)),0);
+      const threshold=kind==='title-artists' ? .62 : .64;
+      if(score<threshold) continue;
+
+      candidates.push({doc,title,artists,score});
+    }
+
+    // Internet Archive "mediatype:audio" can still point to records whose
+    // visible page mainly consists of scans/covers. Verify the actual file
+    // list and retain the item only if a real audio file exists.
+    const checked=await mapWithConcurrency(candidates,6,async c=>{
+      let meta;
+      try{
+        meta=await fetchJson(`https://archive.org/metadata/${encodeURIComponent(c.doc.identifier)}`,12000);
+      }catch(_){
+        return null;
+      }
+
+      const md=meta?.metadata || {};
+      const baseTitle=String(md.title || c.title || '').trim();
+      const baseArtists=arrayify(md.creator).length
+        ? arrayify(md.creator).flatMap(x=>String(x || '').split(/\s*;\s*/)).map(x=>x.trim()).filter(Boolean)
+        : c.artists;
+
+      const best=bestArchiveAudioFile(
+        meta,
+        baseTitle,
+        baseArtists.join(', '),
+        kind==='title-artists' ? query : baseTitle,
+        kind==='artist-titles' ? query : baseArtists[0]
+      );
+      if(!best?.file?.name) return null;
+
+      const audioUrl=archiveDirectFileUrl(c.doc.identifier,best.file.name);
+      return {
+        ...c,
+        baseTitle,
+        baseArtists,
+        audioUrl,
+        audioTitle:best.title || baseTitle,
+        audioArtist:best.artist || baseArtists.join(', '),
+        format:String(best.file.format || best.file.name || 'Audio')
+      };
+    });
+
+    const out=[];
+    for(const c of checked.filter(Boolean)){
       if(kind==='title-artists'){
-        const score=similarity(title,query);
+        // Prefer file-level artist metadata if available, otherwise item metadata.
+        const artistCandidates=String(c.audioArtist || '')
+          .split(/\s*;\s*|\s*,\s*/)
+          .map(x=>x.trim())
+          .filter(Boolean);
+        const values=artistCandidates.length ? artistCandidates : c.baseArtists;
+        const score=similarity(c.audioTitle || c.baseTitle,query);
         if(score<.62) continue;
-        for(const artist of artists){
-          out.push({value:artist,score,source:'Internet Archive',example:title,sourceUrl:`https://archive.org/details/${encodeURIComponent(doc.identifier)}`});
+        for(const artist of values){
+          out.push({
+            value:artist,
+            score,
+            source:'Internet Archive · Audio geprüft',
+            example:c.audioTitle || c.baseTitle,
+            sourceUrl:c.audioUrl
+          });
         }
       }else{
-        const score=Math.max(...artists.map(a=>similarity(a,query)),0);
+        const artistText=String(c.audioArtist || c.baseArtists.join(', '));
+        const score=Math.max(
+          similarity(artistText,query),
+          ...c.baseArtists.map(a=>similarity(a,query))
+        );
         if(score<.64) continue;
-        out.push({value:title,score,source:'Internet Archive',example:artists.join(', '),sourceUrl:`https://archive.org/details/${encodeURIComponent(doc.identifier)}`});
+        out.push({
+          value:c.audioTitle || c.baseTitle,
+          score,
+          source:'Internet Archive · Audio geprüft',
+          example:artistText,
+          sourceUrl:c.audioUrl
+        });
       }
     }
     return out;
@@ -1347,41 +1478,93 @@
     return [];
   }
 
-  async function runAdvancedDiscovery(kind,query){
-    const settled=await Promise.allSettled([
-      discoverItunes(kind,query),
-      discoverFreeToUse(kind,query),
-      discoverCcMixter(kind,query),
-      discoverCommons(kind,query),
-      discoverArchive(kind,query),
-      discoverYouTube(kind,query)
-    ]);
+  const ADVANCED_SOURCE_DEFS = {
+    itunes:    {label:'Apple / iTunes',     search:discoverItunes},
+    freetouse: {label:'Free To Use',        search:discoverFreeToUse},
+    ccmixter:  {label:'ccMixter',           search:discoverCcMixter},
+    commons:   {label:'Wikimedia Commons',  search:discoverCommons},
+    archive:   {label:'Internet Archive',   search:discoverArchive},
+    youtube:   {label:'YouTube',            search:discoverYouTube}
+  };
 
-    const names=['Apple / iTunes','Free To Use','ccMixter','Wikimedia Commons','Internet Archive','YouTube'];
+  function selectedAdvancedSources(){
+    return advancedSourceInputs
+      .filter(input=>input.checked && ADVANCED_SOURCE_DEFS[input.dataset.advancedSource])
+      .map(input=>input.dataset.advancedSource);
+  }
+
+  function saveAdvancedSources(){
+    try{
+      localStorage.setItem('musicfinder.advancedSources',JSON.stringify(
+        Object.fromEntries(advancedSourceInputs.map(input=>[input.dataset.advancedSource,!!input.checked]))
+      ));
+    }catch(_){}
+  }
+
+  function loadAdvancedSources(){
+    let saved=null;
+    try{ saved=JSON.parse(localStorage.getItem('musicfinder.advancedSources') || 'null'); }catch(_){}
+    if(!saved || typeof saved!=='object') return;
+    for(const input of advancedSourceInputs){
+      const key=input.dataset.advancedSource;
+      if(Object.prototype.hasOwnProperty.call(saved,key)) input.checked=!!saved[key];
+    }
+  }
+
+  function setAllAdvancedSources(checked){
+    for(const input of advancedSourceInputs) input.checked=!!checked;
+    saveAdvancedSources();
+  }
+
+  function selectedAdvancedSourceLabels(){
+    return selectedAdvancedSources().map(key=>ADVANCED_SOURCE_DEFS[key].label);
+  }
+
+  function parseAdvancedTitleQueries(raw){
+    const seen=new Set();
+    const titles=[];
+    for(const line of String(raw || '').split(/\r?\n/)){
+      const title=line.trim();
+      if(!title) continue;
+      const key=normalize(title);
+      if(!key || seen.has(key)) continue;
+      seen.add(key);
+      titles.push(title);
+    }
+    return titles;
+  }
+
+  async function runAdvancedDiscovery(kind,query,sourceKeys=selectedAdvancedSources()){
+    const active=sourceKeys
+      .filter(key=>ADVANCED_SOURCE_DEFS[key])
+      .map(key=>({key,...ADVANCED_SOURCE_DEFS[key]}));
+
+    if(!active.length) return {items:[],failed:[],selected:[]};
+
+    const settled=await Promise.allSettled(
+      active.map(source=>source.search(kind,query))
+    );
+
     const failed=[];
     const map=new Map();
     settled.forEach((result,index)=>{
+      const source=active[index];
       if(result.status==='rejected'){
-        failed.push(names[index]);
+        failed.push(source.label);
         return;
       }
       for(const item of result.value || []){
         addDiscovery(map,item.value,item.score,item.source,item);
       }
     });
-    return {items:finaliseDiscovery(map),failed};
+    return {
+      items:finaliseDiscovery(map),
+      failed,
+      selected:active.map(source=>source.label)
+    };
   }
 
-  function renderDiscovery(items,kind,query,failed=[]){
-    resultsBox.innerHTML='';
-    clearYouTubeReference();
-
-    const summary=document.createElement('div');
-    summary.className='discovery-summary';
-    const noun=kind==='title-artists'?'unterschiedliche Interpreten':'unterschiedliche Titel';
-    summary.textContent=`${items.length} ${noun} gefunden. Ergebnisse werden aus allen erreichbaren eingebundenen Quellen zusammengeführt.`;
-    resultsBox.append(summary);
-
+  function createDiscoveryList(items,kind,query){
     const list=document.createElement('div');
     list.className='discovery-list';
 
@@ -1421,11 +1604,12 @@
       use.addEventListener('click',()=>{
         setSearchMode('single');
         if(kind==='title-artists'){
-          titleInput.value=query;
+          // Prefer the spelling actually returned by a provider.
+          titleInput.value=item.examples[0] || query;
           artistInput.value=item.value;
         }else{
           titleInput.value=item.value;
-          artistInput.value=query;
+          artistInput.value=item.examples[0] || query;
         }
         window.scrollTo({top:0,behavior:'smooth'});
       });
@@ -1447,19 +1631,87 @@
         sourceLink.href=item.sourceUrls[0];
         sourceLink.target='_blank';
         sourceLink.rel='noopener noreferrer';
-        sourceLink.textContent='Quelle öffnen';
+        sourceLink.textContent=item.sources.some(s=>s.startsWith('Internet Archive · Audio geprüft'))
+          ? 'Audio direkt prüfen'
+          : 'Quelle öffnen';
         actions.append(sourceLink);
       }
 
       card.append(head,sources,example,actions);
       list.append(card);
     }
-    resultsBox.append(list);
+    return list;
+  }
+
+  function renderDiscovery(items,kind,query,failed=[]){
+    resultsBox.innerHTML='';
+    clearYouTubeReference();
+
+    const summary=document.createElement('div');
+    summary.className='discovery-summary';
+    const noun=kind==='title-artists'?'unterschiedliche Interpreten':'unterschiedliche Titel';
+    const activeLabels=selectedAdvancedSourceLabels();
+    summary.textContent=`${items.length} ${noun} gefunden. Verwendete Quellen: ${activeLabels.join(', ') || 'keine'}.`;
+    resultsBox.append(summary);
+
+    if(items.length){
+      resultsBox.append(createDiscoveryList(items,kind,query));
+    }
 
     if(failed.length){
       const warning=document.createElement('div');
       warning.className='bundle-warning';
       warning.textContent=`Zeitweise nicht erreichbare Quellen: ${[...new Set(failed)].join(', ')}. Die angezeigte Liste kann deshalb unvollständig sein.`;
+      resultsBox.append(warning);
+    }
+  }
+
+  function renderMultiTitleDiscovery(groups,failed=[]){
+    resultsBox.innerHTML='';
+    clearYouTubeReference();
+
+    const activeLabels=selectedAdvancedSourceLabels();
+    const totalArtists=groups.reduce((sum,g)=>sum+g.items.length,0);
+
+    const summary=document.createElement('div');
+    summary.className='discovery-summary';
+    summary.textContent=`${groups.length} Titel durchsucht, ${totalArtists} Interpret-Treffer gefunden. Verwendete Quellen: ${activeLabels.join(', ') || 'keine'}.`;
+    resultsBox.append(summary);
+
+    const wrap=document.createElement('div');
+    wrap.className='discovery-groups';
+
+    for(const group of groups){
+      const section=document.createElement('section');
+      section.className='discovery-group';
+
+      const head=document.createElement('div');
+      head.className='discovery-group-head';
+      const title=document.createElement('div');
+      title.className='discovery-group-title';
+      title.textContent=group.query;
+      const count=document.createElement('div');
+      count.className='discovery-group-count';
+      count.textContent=`${group.items.length} Interpret${group.items.length===1?'':'en'}`;
+      head.append(title,count);
+      section.append(head);
+
+      if(group.items.length){
+        section.append(createDiscoveryList(group.items,'title-artists',group.query));
+      }else{
+        const empty=document.createElement('div');
+        empty.className='discovery-group-empty';
+        empty.textContent='Kein passender Interpret in den ausgewählten Quellen gefunden.';
+        section.append(empty);
+      }
+      wrap.append(section);
+    }
+    resultsBox.append(wrap);
+
+    if(failed.length){
+      const warning=document.createElement('div');
+      warning.className='bundle-warning';
+      warning.textContent=`Zeitweise nicht erreichbare Quellen: ${[...new Set(failed)].join(', ')}. Einzelne Gruppen können deshalb unvollständig sein.`;
       resultsBox.append(warning);
     }
   }
@@ -1471,12 +1723,15 @@
     advancedArtistBtn.classList.toggle('active',byArtist);
     advancedTitleBtn.setAttribute('aria-pressed',String(!byArtist));
     advancedArtistBtn.setAttribute('aria-pressed',String(byArtist));
-    advancedQueryLabel.textContent=byArtist?'Interpret':'Titel';
-    advancedQueryInput.placeholder=byArtist?'z. B. Metallica':'z. B. Hallelujah';
+    advancedQueryLabel.textContent=byArtist?'Interpret':'Titel (einer pro Zeile)';
+    advancedQueryInput.rows=byArtist?2:6;
+    advancedQueryInput.placeholder=byArtist
+      ? 'z. B. Metallica'
+      : 'z. B. Hallelujah\nThe Sound of Silence\nNothing Else Matters';
     advancedHelp.textContent=byArtist
       ? 'Findet alle unterschiedlichen Titel, die diesem Interpreten in den eingebundenen Quellen zugeordnet werden. YouTube wird nur über professionelle/verifizierte Musiktreffer berücksichtigt.'
-      : 'Findet alle unterschiedlichen Interpreten, die zu diesem Titel in den eingebundenen Quellen gefunden werden. YouTube-Beiträge werden nur aus professionellen/verifizierten Musikquellen übernommen; typische Laienvideos werden herausgefiltert.';
-    if(searchMode==='advanced') searchBtn.textContent=byArtist?'Alle Titel finden':'Alle Interpreten finden';
+      : 'Findet für jeden eingegebenen Titel alle unterschiedlichen Interpreten in den ausgewählten Quellen. Ein Titel pro Zeile; doppelte Zeilen werden nur einmal gesucht. YouTube-Beiträge werden nur aus professionellen/verifizierten Musikquellen übernommen; typische Laienvideos werden herausgefiltert.';
+    if(searchMode==='advanced') searchBtn.textContent=byArtist?'Alle Titel finden':'Interpreten für alle Titel finden';
   }
 
   function setSearchMode(mode){
@@ -1497,7 +1752,7 @@
     advancedModeBtn.setAttribute('aria-pressed',String(advanced));
 
     if(list) searchBtn.textContent='3 günstigste Bundles suchen';
-    else if(advanced) searchBtn.textContent=advancedKind==='artist-titles'?'Alle Titel finden':'Alle Interpreten finden';
+    else if(advanced) searchBtn.textContent=advancedKind==='artist-titles'?'Alle Titel finden':'Interpreten für alle Titel finden';
     else searchBtn.textContent='3 günstigste Treffer suchen';
 
     resultsBox.innerHTML='';
@@ -1746,21 +2001,62 @@
   }
 
   async function runAdvancedSearch(){
-    const query=advancedQueryInput.value.trim();
-    if(!query){
-      setStatus(advancedKind==='artist-titles'?'Bitte einen Interpreten angeben.':'Bitte einen Titel angeben.');
+    const raw=advancedQueryInput.value.trim();
+    if(!raw){
+      setStatus(advancedKind==='artist-titles'?'Bitte einen Interpreten angeben.':'Bitte mindestens einen Titel angeben.');
       return;
     }
-    const label=advancedKind==='artist-titles'?'Titel':'Interpreten';
-    setStatus(`Erweiterte Suche: ermittle ${label} aus allen eingebundenen Quellen …`);
-    const result=await runAdvancedDiscovery(advancedKind,query);
-    if(!result.items.length){
-      renderDiscovery([],advancedKind,query,result.failed);
-      setStatus(`Keine passenden ${label} gefunden.${result.failed.length?' Einige Quellen waren nicht erreichbar.':''}`);
+
+    const sourceKeys=selectedAdvancedSources();
+    if(!sourceKeys.length){
+      setStatus('Bitte mindestens eine Quelle für die erweiterte Suche auswählen.');
       return;
     }
-    renderDiscovery(result.items,advancedKind,query,result.failed);
-    setStatus(`${result.items.length} unterschiedliche ${label} gefunden.${result.failed.length?' Einige Quellen waren nicht erreichbar; die Liste kann unvollständig sein.':''}`);
+
+    const sourceLabels=sourceKeys.map(key=>ADVANCED_SOURCE_DEFS[key].label);
+
+    if(advancedKind==='artist-titles'){
+      const query=raw.split(/\r?\n/).map(x=>x.trim()).find(Boolean) || '';
+      setStatus(`Erweiterte Suche: ermittle Titel in ${sourceLabels.join(', ')} …`);
+      const result=await runAdvancedDiscovery('artist-titles',query,sourceKeys);
+
+      if(!result.items.length){
+        renderDiscovery([],'artist-titles',query,result.failed);
+        setStatus(`Keine passenden Titel in den ausgewählten Quellen gefunden.${result.failed.length?' Einige Quellen waren nicht erreichbar.':''}`);
+        return;
+      }
+
+      renderDiscovery(result.items,'artist-titles',query,result.failed);
+      setStatus(`${result.items.length} unterschiedliche Titel gefunden.${result.failed.length?' Einige ausgewählte Quellen waren nicht erreichbar; die Liste kann unvollständig sein.':''}`);
+      return;
+    }
+
+    const queries=parseAdvancedTitleQueries(raw);
+    if(!queries.length){
+      setStatus('Bitte mindestens einen Titel angeben.');
+      return;
+    }
+
+    const groups=[];
+    const failed=[];
+    let totalArtists=0;
+
+    for(let i=0;i<queries.length;i++){
+      const query=queries[i];
+      setStatus(`Erweiterte Suche ${i+1}/${queries.length}: Interpreten zu „${query}“ in ${sourceLabels.join(', ')} …`);
+      const result=await runAdvancedDiscovery('title-artists',query,sourceKeys);
+      groups.push({query,items:result.items});
+      totalArtists+=result.items.length;
+      failed.push(...result.failed);
+
+      // Avoid a burst of requests when many titles are pasted.
+      if(i<queries.length-1) await sleep(220);
+    }
+
+    renderMultiTitleDiscovery(groups,failed);
+    const emptyCount=groups.filter(g=>!g.items.length).length;
+    const emptyNote=emptyCount?` Für ${emptyCount} Titel wurde kein Interpret gefunden.`:'';
+    setStatus(`${queries.length} Titel durchsucht, ${totalArtists} Interpret-Treffer gefunden.${emptyNote}${failed.length?' Einige ausgewählte Quellen waren zeitweise nicht erreichbar.':''}`);
   }
 
   async function runSearch(){
@@ -1794,6 +2090,9 @@
   advancedModeBtn.addEventListener('click',()=>setSearchMode('advanced'));
   advancedTitleBtn.addEventListener('click',()=>setAdvancedKind('title-artists'));
   advancedArtistBtn.addEventListener('click',()=>setAdvancedKind('artist-titles'));
+  advancedSourcesAllBtn.addEventListener('click',()=>setAllAdvancedSources(true));
+  advancedSourcesNoneBtn.addEventListener('click',()=>setAllAdvancedSources(false));
+  advancedSourceInputs.forEach(input=>input.addEventListener('change',saveAdvancedSources));
   searchBtn.addEventListener('click',runSearch);
   [titleInput,artistInput].forEach(el=>el.addEventListener('keydown',e=>{
     if(e.key==='Enter') runSearch();
@@ -1802,8 +2101,15 @@
     if((e.ctrlKey||e.metaKey) && e.key==='Enter') runSearch();
   });
   advancedQueryInput.addEventListener('keydown',e=>{
-    if(e.key==='Enter') runSearch();
+    if(advancedKind==='artist-titles' && e.key==='Enter' && !e.shiftKey){
+      e.preventDefault();
+      runSearch();
+    }else if(advancedKind==='title-artists' && (e.ctrlKey||e.metaKey) && e.key==='Enter'){
+      e.preventDefault();
+      runSearch();
+    }
   });
+  loadAdvancedSources();
   setAdvancedKind('title-artists');
   setSearchMode('single');
 })();

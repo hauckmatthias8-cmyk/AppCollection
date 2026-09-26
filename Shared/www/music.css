@@ -138,3 +138,28 @@ input:focus,textarea:focus{border-color:#6ee7ff88;box-shadow:0 0 0 3px #6ee7ff19
   .discovery-head{display:block}
   .discovery-score{display:inline-block;margin-top:8px}
 }
+
+.source-filter{margin:2px 0 0;padding:14px;border-radius:19px;border:1px solid #ffffff18;background:#091522}
+.source-filter-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px}
+.source-filter legend{padding:0;font-size:21px;font-weight:900;color:#dfe8f5}
+.source-filter-actions{display:flex;gap:8px}
+.source-filter-actions button{min-height:42px;border-radius:12px;border:1px solid #ffffff1b;background:#17263c;color:#fff;padding:7px 11px;font-size:17px;font-weight:850}
+.source-filter-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.source-check{display:flex!important;grid-template-columns:none!important;align-items:center;gap:10px!important;min-height:48px;border-radius:14px;background:#101d2f;border:1px solid #ffffff12;padding:9px 11px;font-weight:800!important;cursor:pointer}
+.source-check input{width:22px!important;height:22px!important;min-height:0!important;flex:none;accent-color:#62e6a7}
+.source-check span{font-size:18px!important;color:#e6eef8!important}
+.source-check:has(input:checked){border-color:#62e6a744;background:#10261f}
+@media(max-width:560px){
+  .source-filter-grid{grid-template-columns:1fr}
+  .source-filter-head{align-items:flex-start}
+}
+
+.discovery-groups{display:grid;gap:18px}
+.discovery-group{display:grid;gap:10px}
+.discovery-group-head{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 15px;border-radius:17px;background:#102033;border:1px solid #ffffff18}
+.discovery-group-title{font-size:24px;font-weight:950;line-height:1.2}
+.discovery-group-count{white-space:nowrap;font-size:17px;font-weight:900;color:var(--cyan)}
+.discovery-group-empty{padding:14px 16px;border-radius:17px;background:#111a28;border:1px dashed #ffffff22;color:var(--muted);font-size:18px}
+@media(max-width:560px){
+  .discovery-group-head{align-items:flex-start;flex-direction:column}
+}

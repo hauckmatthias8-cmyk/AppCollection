@@ -1,4 +1,4 @@
-// BUILD: 19
+// BUILD: 22
 const APP_VERSION = '1.3.0';
 const CACHE = `hauckis-apps-${APP_VERSION}`;
 const ASSETS = [
