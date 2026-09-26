@@ -11,3 +11,5 @@ Empfohlene Motive für beide Stores:
 7. Sudoku-Löser mit eigener Vorgabe.
 
 Keine privaten Inhalte, persönlichen Nachrichten, Fotos oder Benachrichtigungen in Store-Screenshots oder Store-Metadaten übernehmen.
+
+8. Musikfinder – Suche und Treffer mit Lizenz-/Datei-Tag-Prüfung.

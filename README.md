@@ -21,6 +21,25 @@ Multiplattform-Projekt mit einer gemeinsamen lokalen App-Codebasis. Der bevorzug
 - **Markiertes Feld lösen:** Ist ein bearbeitbares Feld ausgewählt, löst der Einzelschritt-Löser genau dieses Feld; andernfalls wird das nächste freie Feld verwendet.
 - Tagesfortschritt wird pro Datum und Schwierigkeitsstufe lokal gespeichert.
 
+
+### App 03 – Musikfinder
+
+- Online-App: Suche nach kostenlosen, frei lizenzierten/Public-Domain-Musikdateien und kostenpflichtigen Kaufangeboten.
+- Eingabe von Titel und Interpret.
+- Fehlertoleranter Vergleich, damit kleinere Schreibfehler nicht sofort zu „kein Treffer“ führen.
+- Aktuelle Download-/Kaufquellen: Wikimedia Commons, Internet Archive, ccMixter, Free To Use und Apple/iTunes Store.
+- YouTube wird zusätzlich als reine Hör-/Prüfreferenz durchsucht. Die Suche läuft ohne persönliche Zugangsdaten über öffentliche Invidious-API-Instanzen; YouTube wird nicht als Downloadquelle und nicht in der Preisberechnung verwendet.
+- Internet-Archive-Treffer werden nur berücksichtigt, wenn die Quelle eine explizite freie Lizenz/Public-Domain-Kennzeichnung liefert.
+- Bei direkt lesbaren Dateien versucht die App zusätzlich, eingebettete Datei-Tags (u. a. ID3, FLAC/Vorbis, Ogg/Vorbis, WAV/INFO) mit Titel und Interpret abzugleichen.
+- Bestätigte Tag-Widersprüche werden nicht als Downloadtreffer angeboten.
+- Kostenlose Treffer erhalten zusätzlich einen direkten „Direkt prüfen“-Link auf die angebotene Audiodatei, damit der Inhalt vor dem Download kontrolliert werden kann; Kaufangebote führen zur jeweiligen Store-Seite.
+- Bei einem Einzeltitel werden ausschließlich die drei günstigsten passenden Treffer ausgegeben; kostenlose Treffer haben dabei Preis 0.
+- Alternativ kann eine ganze Titelliste eingegeben werden (`Titel | Interpret`, eine Zeile pro Song).
+- Für Titellisten werden automatisch die drei günstigsten **vollständigen Bundles** berechnet. Jedes Bundle enthält genau ein Angebot pro gewünschtem Titel; Anbieter dürfen innerhalb eines Bundles gemischt werden.
+- Doppelte Listeneinträge werden nur einmal berücksichtigt; fehlerhafte Zeilen werden vor der Suche gemeldet.
+- Für Titellisten gibt es in der App kein festes Titel-Limit. Die Titel werden nacheinander verarbeitet, damit öffentliche Quellen nicht mit Request-Spitzen belastet werden; entsprechend dauern lange Listen länger.
+- Anbieter-Regel: Keine Quelle wird eingebunden, wenn API-Key, Client-ID, OAuth, Login oder andere persönliche Zugangsdaten erforderlich sind.
+
 ## Projektstruktur
 
 - `Shared/www/` – gemeinsame App-Oberfläche und gesamte Fachlogik.
@@ -30,9 +49,11 @@ Multiplattform-Projekt mit einer gemeinsamen lokalen App-Codebasis. Der bevorzug
 
 Neue Mini-Apps werden grundsätzlich in `Shared/www/` ergänzt.
 
-## Lokalität
+## Lokalität und Netzwerk-Trennung
 
-Die App-Funktionen benötigen keinen Backend-Server. In der bevorzugten PWA werden die statischen Dateien über GitHub Pages geladen und anschließend offline gecacht; Solver, Sudoku-Generator, Sudoku-Löser und Bildverarbeitung laufen auf dem Gerät.
+App 01 (Zauberwürfel) und App 02 (Sudoku) bleiben vollständig lokal und erhalten per Content-Security-Policy keinen API-/Netzwerkzugriff. App 03 (Musikfinder) ist ausdrücklich als Online-App markiert und darf nur auf die fest freigegebenen Musikquellen zugreifen.
+
+Die PWA-Dateien selbst werden weiterhin über GitHub Pages geladen und offline gecacht. Externe Antworten des Musikfinders werden vom Service Worker bewusst **nicht** gecacht. Es gibt keinen eigenen Backend-Server.
 
 ## Entwicklung und GitHub Actions
 
@@ -55,13 +76,13 @@ Ein Release ist absichtlich ein manueller Vorgang. **Weder ein normaler Push noc
 Windows:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File Deployment/Tools/release.ps1 -Version 1.2.2 -BuildNumber 11
+powershell -ExecutionPolicy Bypass -File Deployment/Tools/release.ps1 -Version 1.3.0 -BuildNumber 17
 ```
 
 macOS/Linux:
 
 ```bash
-Deployment/Tools/release.sh 1.2.2 11
+Deployment/Tools/release.sh 1.3.0 15
 ```
 
 Das Skript setzt die gemeinsame Version und führt den Preflight aus. Es führt **kein** `git commit`, `git tag`, `git push` oder Deployment aus.
@@ -72,7 +93,7 @@ Das Skript setzt die gemeinsame Version und führt den Preflight aus. Es führt 
 git status
 git diff
 git add .
-git commit -m "Release v1.2.2"
+git commit -m "Release v1.3.0"
 git push origin main
 ```
 
@@ -81,8 +102,8 @@ Der Push auf `main` löst **keine** GitHub Action aus.
 ### 3. Version-Tag bewusst von Hand anlegen
 
 ```bash
-git tag -a v1.2.2 -m "Hauckis App-Sammlung v1.2.2"
-git push origin v1.2.2
+git tag -a v1.3.0 -m "Hauckis App-Sammlung v1.3.0"
+git push origin v1.3.0
 ```
 
 Auch dieser Tag-Push startet **kein** Release.
@@ -95,7 +116,7 @@ Auf GitHub:
 2. **Actions** öffnen.
 3. Workflow **Release PWA manually** auswählen.
 4. **Run workflow** wählen.
-5. Bei `version_tag` exakt `v1.2.2` eintragen.
+5. Bei `version_tag` exakt `v1.3.0` eintragen.
 6. Workflow manuell starten.
 
 Der Workflow checkt exakt diesen Tag aus, prüft, dass `VERSION` dazu passt, führt den Preflight aus und veröffentlicht erst danach `Shared/www/` nach GitHub Pages.
@@ -114,4 +135,4 @@ Falls irgendwann nötig: **Actions → Build native Android + iOS manually → R
 
 ## Version
 
-Aktueller Projektstand: **1.2.2 / Build 11**.
+Aktueller Projektstand: **1.3.0 / Build 17**.

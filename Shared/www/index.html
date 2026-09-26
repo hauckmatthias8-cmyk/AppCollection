@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
   <meta name="theme-color" content="#07111c">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
   
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -24,7 +25,7 @@
     </header>
 
     <section class="library-section">
-      <div class="section-title"><span>Bibliothek</span><span class="count">2 Apps</span></div>
+      <div class="section-title"><span>Bibliothek</span><span class="count">3 Apps</span></div>
       <div class="app-grid">
         <a class="app-card cube-card" href="cube.html">
           <div class="app-icon cube-icon" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
@@ -45,12 +46,23 @@
           </div>
           <div class="open-arrow">›</div>
         </a>
+
+
+        <a class="app-card music-card" href="music.html">
+          <div class="app-icon music-icon" aria-hidden="true">♪</div>
+          <div class="app-card-text">
+            <div class="app-number">APP 03 · ONLINE</div>
+            <h2>Musikfinder</h2>
+            <p>Musikdateien und Kaufangebote aus öffentlichen Quellen finden – fehlertolerant und nach Preis sortiert.</p>
+          </div>
+          <div class="open-arrow">›</div>
+        </a>
       </div>
     </section>
 
     <section class="local-card">
       <div class="shield">✓</div>
-      <div><b>Lokal &amp; offline</b><span>Berechnung und Nutzdaten bleiben auf dem Gerät. Netzwerk wird nur zum Laden und Aktualisieren der Web-App benötigt.</span></div>
+      <div><b>Getrennte Netzwerknutzung</b><span>Zauberwürfel und Sudoku bleiben lokal. Nur als „Online“ markierte Apps greifen zusätzlich auf freigegebene Internetquellen zu.</span></div>
     </section>
 
     <div class="future-note">Platz für weitere möglicherweise nützliche Apps ist reserviert.</div>

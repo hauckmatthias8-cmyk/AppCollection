@@ -5,7 +5,8 @@
         android:name="android.hardware.camera"
         android:required="false" />
 
-    <!-- Absichtlich keine INTERNET-Berechtigung: alle Werkzeuge laufen lokal. -->
+    <!-- Internet ist ausschließlich für App 03 (Musikfinder) vorhanden; die WebView blockiert Netzverkehr aus den Offline-Apps. -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"

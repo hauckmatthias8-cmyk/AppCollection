@@ -18,8 +18,8 @@ def read(rel: str) -> str:
     return p.read_text(encoding="utf-8", errors="replace")
 
 required = [
-    "Shared/www/index.html", "Shared/www/cube.html", "Shared/www/sudoku.html",
-    "Shared/www/cube.js", "Shared/www/solve.js", "Shared/www/sudoku-core.js",
+    "Shared/www/index.html", "Shared/www/cube.html", "Shared/www/sudoku.html", "Shared/www/music.html",
+    "Shared/www/cube.js", "Shared/www/solve.js", "Shared/www/sudoku-core.js", "Shared/www/music-app.js", "Shared/www/music-bundle.js", "Shared/www/music.css",
     "Android/app/src/main/AndroidManifest.xml", "Android/app/build.gradle",
     "iOS/HauckisAppSammlung/Info.plist",
     "iOS/HauckisAppSammlung.xcodeproj/project.pbxproj",
@@ -34,8 +34,11 @@ index = read("Shared/www/index.html")
 if FULL_NAME not in index: errors.append("Vollständiger App-Name fehlt auf dem Startbildschirm.")
 
 android_manifest = read("Android/app/src/main/AndroidManifest.xml")
-if "android.permission.INTERNET" in android_manifest:
-    errors.append("AndroidManifest enthält INTERNET-Berechtigung; aktuelle App soll offline bleiben.")
+if "android.permission.INTERNET" not in android_manifest:
+    errors.append("AndroidManifest enthält keine INTERNET-Berechtigung für den Musikfinder.")
+main_activity = read("Android/app/src/main/java/de/matthiashauck/appsammlung/MainActivity.java")
+if "isAllowedMusicHost" not in main_activity or "blockedNetworkResponse" not in main_activity:
+    errors.append("Android-WebView enthält keine Netzwerktrennung für App 03.")
 
 strings = read("Android/app/src/main/res/values/strings.xml")
 if FULL_NAME not in strings: errors.append("Android-App-Name stimmt nicht.")
@@ -55,6 +58,73 @@ for html in (ROOT / "Shared/www").glob("*.html"):
     if re.search(r'''(?:src|href)\s*=\s*["']https?://''', text, flags=re.I):
         errors.append(f"Externe Laufzeit-Ressource gefunden: {html.relative_to(ROOT)}")
 
+
+# Netzwerk-Trennung: Bibliothek, Zauberwürfel und Sudoku dürfen selbst keine externen API-Aufrufe starten.
+for rel in ["Shared/www/index.html", "Shared/www/cube.html", "Shared/www/sudoku.html"]:
+    text = read(rel)
+    if "connect-src 'none'" not in text:
+        errors.append(f"Offline-Seite hat keine connect-src 'none'-Sperre: {rel}")
+
+for rel in ["Shared/www/cube-app.js", "Shared/www/sudoku-app.js", "Shared/www/sudoku-core.js"]:
+    text = read(rel)
+    if re.search(r"\b(?:fetch|XMLHttpRequest|WebSocket|EventSource)\s*\(", text):
+        errors.append(f"Offline-App enthält direkten Netzwerkaufruf: {rel}")
+
+music_html = read("Shared/www/music.html")
+if "commons.wikimedia.org" not in music_html or "archive.org" not in music_html or "itunes.apple.com" not in music_html or "ccmixter.org" not in music_html or "api.freetouse.com" not in music_html:
+    errors.append("Musikfinder-CSP enthält nicht alle freigegebenen Quellen.")
+if "connect-src *" in music_html or "connect-src https:" in music_html:
+    errors.append("Musikfinder-CSP ist zu weit gefasst.")
+music_js = read("Shared/www/music-app.js")
+for required_host in ["commons.wikimedia.org", "archive.org", "itunes.apple.com", "ccmixter.org", "api.freetouse.com"]:
+    if required_host not in music_js:
+        errors.append(f"Musikfinder-Quelle fehlt im Code: {required_host}")
+
+
+if "const MAX_RESULTS = 3;" not in music_js:
+    errors.append("Musikfinder-Einzelsuche ist nicht auf die drei günstigsten Treffer begrenzt.")
+if "const MAX_BUNDLES = 3;" not in music_js:
+    errors.append("Musikfinder-Titelliste ist nicht auf die drei günstigsten Bundles begrenzt.")
+if "buildTopBundles" not in music_js:
+    errors.append("Musikfinder verwendet die Bundle-Berechnung nicht.")
+music_bundle_js = read("Shared/www/music-bundle.js")
+if "function parseTrackList" not in music_bundle_js or "function buildTopBundles" not in music_bundle_js:
+    errors.append("Musikfinder-Bundle-Core ist unvollständig.")
+if "searchItunes" not in music_js or "trackPrice" not in music_js:
+    errors.append("Kostenpflichtige Apple/iTunes-Angebote sind nicht eingebunden.")
+
+
+for required_provider_fn in ["searchCcMixter", "searchFreeToUse", "searchItunes", "searchCommons", "searchArchive"]:
+    if required_provider_fn not in music_js:
+        errors.append(f"Musikfinder-Provider fehlt: {required_provider_fn}")
+
+# In der Client-Implementierung dürfen keine persönlichen Provider-Zugangsdaten
+# oder typische Secret-Konfigurationen eingeführt werden.
+secret_patterns = [
+    r"client[_-]?secret\s*[:=]",
+    r"api[_-]?key\s*[:=]",
+    r"bearer\s+[A-Za-z0-9._~-]{12,}",
+    r"authorization\s*[:=]",
+    r"oauth[_-]?(?:token|secret)\s*[:=]",
+]
+for pattern in secret_patterns:
+    if re.search(pattern, music_js, re.I):
+        errors.append(f"Musikfinder enthält mögliche persönliche Provider-Zugangsdaten: {pattern}")
+
+
+if "searchYouTubeReference" not in music_js or "youtube.com/watch?v=" not in music_js:
+    errors.append("Musikfinder enthält keine YouTube-Prüfreferenz.")
+if "YOUTUBE_SEARCH_INSTANCES" not in music_js:
+    errors.append("YouTube-Suche hat keine öffentlichen no-key Suchendpunkte.")
+if "Direkt prüfen" not in music_js or "preview-btn" not in music_html:
+    errors.append("Kostenlose Musiktreffer haben keinen direkten Prüf-Link.")
+if "youtubeReference" not in music_js or "req.youtubeReference" not in music_js:
+    errors.append("YouTube-Prüfreferenz fehlt in der Titellisten-/Bundle-Suche.")
+if "www.youtube.com" not in read("Android/app/src/main/java/de/matthiashauck/appsammlung/MainActivity.java"):
+    errors.append("Android-Allowlist enthält YouTube nicht.")
+if "www.youtube.com" not in read("iOS/HauckisAppSammlung/LocalWebView.swift"):
+    errors.append("iOS-Allowlist enthält YouTube nicht.")
+
 # PWA-Grundprüfung
 manifest = read("Shared/www/manifest.webmanifest")
 if FULL_NAME not in manifest:
@@ -65,6 +135,8 @@ if '"display": "standalone"' not in manifest:
 sw = read("Shared/www/sw.js")
 if "const APP_VERSION" not in sw:
     errors.append("Service Worker enthält keine versionsgebundene Cache-ID.")
+if "if (!sameOrigin)" not in sw:
+    errors.append("Service Worker trennt externe Musikabfragen nicht vom lokalen PWA-Cache.")
 
 # Persönliche UI-Texte dürfen nicht in öffentliche Dokumentation kopiert werden.
 class _PrivateTextParser(HTMLParser):
@@ -171,6 +243,18 @@ if node:
         errors.append(f"Sudoku-Test konnte nicht ausgeführt werden: {exc}")
 else:
     warnings.append("Node.js nicht gefunden; automatischer Sudoku-Regressionstest wurde übersprungen.")
+
+# Musikfinder-Bundle-Regressionstest, wenn Node verfügbar ist.
+if node:
+    try:
+        cp = subprocess.run([node, str(ROOT / "Deployment/Tools/test_music_bundle.js")], cwd=ROOT,
+                            text=True, capture_output=True, timeout=30)
+        if cp.returncode:
+            errors.append("Musikfinder-Bundle-Test fehlgeschlagen: " + (cp.stderr.strip() or cp.stdout.strip()))
+        else:
+            print(cp.stdout.strip())
+    except Exception as exc:
+        errors.append(f"Musikfinder-Bundle-Test konnte nicht ausgeführt werden: {exc}")
 
 for w in warnings: print("WARNUNG:", w)
 for e in errors: print("FEHLER:", e)

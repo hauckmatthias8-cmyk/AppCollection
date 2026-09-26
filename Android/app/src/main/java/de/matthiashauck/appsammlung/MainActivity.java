@@ -11,11 +11,14 @@ import android.view.View;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import java.io.File;
+import java.io.ByteArrayInputStream;
+import java.util.Collections;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -61,18 +64,23 @@ public final class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                Uri uri = request.getUrl();
-                String scheme = uri.getScheme();
-                // Die App-Sammlung ist absichtlich lokal. Externe Webnavigation ist gesperrt.
-                return !("file".equalsIgnoreCase(scheme) || "content".equalsIgnoreCase(scheme));
+                return handleNavigation(view, request.getUrl());
             }
 
             @Override
             @SuppressWarnings("deprecation")
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                Uri uri = Uri.parse(url);
+                return handleNavigation(view, Uri.parse(url));
+            }
+
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                Uri uri = request.getUrl();
                 String scheme = uri.getScheme();
-                return !("file".equalsIgnoreCase(scheme) || "content".equalsIgnoreCase(scheme));
+                if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {
+                    if (!(isMusicPage(view) && isAllowedMusicHost(uri))) return blockedNetworkResponse();
+                }
+                return super.shouldInterceptRequest(view, request);
             }
         });
 
@@ -88,6 +96,61 @@ public final class MainActivity extends Activity {
         });
 
         webView.loadUrl("file:///android_asset/www/index.html");
+    }
+
+    private boolean isMusicPage(WebView view) {
+        String current = view != null ? view.getUrl() : null;
+        return current != null && current.endsWith("/music.html");
+    }
+
+    private boolean isAllowedMusicHost(Uri uri) {
+        String host = uri != null ? uri.getHost() : null;
+        if (host == null) return false;
+        host = host.toLowerCase(Locale.ROOT);
+        return host.equals("archive.org")
+                || host.endsWith(".archive.org")
+                || host.equals("commons.wikimedia.org")
+                || host.equals("upload.wikimedia.org")
+                || host.equals("itunes.apple.com")
+                || host.equals("music.apple.com")
+                || host.equals("ccmixter.org")
+                || host.equals("youtube.com")
+                || host.equals("www.youtube.com")
+                || host.equals("youtu.be")
+                || host.equals("inv.nadeko.net")
+                || host.equals("invidious.nerdvpn.de")
+                || host.equals("yt.chocolatemoo53.com")
+                || host.equals("invidious.tiekoetter.com")
+                || host.equals("api.freetouse.com")
+                || host.equals("freetouse.com")
+                || host.endsWith(".freetouse.com");
+    }
+
+    private boolean handleNavigation(WebView view, Uri uri) {
+        if (uri == null) return true;
+        String scheme = uri.getScheme();
+        if ("file".equalsIgnoreCase(scheme) || "content".equalsIgnoreCase(scheme) || "about".equalsIgnoreCase(scheme)) {
+            return false;
+        }
+        if (("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme))
+                && isMusicPage(view) && isAllowedMusicHost(uri)) {
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW, uri));
+            } catch (Exception ignored) {}
+            return true;
+        }
+        return true;
+    }
+
+    private WebResourceResponse blockedNetworkResponse() {
+        return new WebResourceResponse(
+                "text/plain",
+                "utf-8",
+                403,
+                "Blocked by offline policy",
+                Collections.emptyMap(),
+                new ByteArrayInputStream(new byte[0])
+        );
     }
 
     private boolean openImageChooser(boolean captureOnly) {

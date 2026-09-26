@@ -42,4 +42,4 @@ Android APK/AAB und iOS IPA bleiben als Fallback vorhanden. Auch diese werden nu
 
 ## 8. Lokalität
 
-Solver, Sudoku und Bildverarbeitung laufen lokal auf dem Gerät. Netzwerk wird nur zum erstmaligen Laden bzw. zum bewussten Abruf einer veröffentlichten neuen Version benötigt.
+Zauberwürfel, Sudoku und Bildverarbeitung laufen lokal auf dem Gerät. Der Musikfinder ist als Online-App getrennt und greift nur auf seine freigegebenen Musikquellen zu. Zusätzlich wird Netzwerk für das Laden bzw. Aktualisieren der PWA benötigt.

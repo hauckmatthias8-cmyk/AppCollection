@@ -10,7 +10,7 @@ Hauckis möglicherweise nützliche App-Sammlung
 
 ## Kurze Beschreibung
 
-Lokale Sammlung praktischer Helfer: Zauberwürfel, Sudoku und mehr.
+Sammlung praktischer Helfer: Zauberwürfel, Sudoku, Musikfinder und mehr.
 
 ## Beschreibung
 
@@ -23,8 +23,9 @@ Aktuell enthalten:
 - Zufälliges Sudoku: Neue Rätsel in Leicht, Normal oder Schwer auf Knopfdruck.
 - Leicht/Normal: eindeutig lösbar. Schwer: eine oder höchstens zwei Lösungen.
 - Sudoku-Löser: Eigene Vorgaben eingeben und das markierte Feld Schritt für Schritt lösen; bei mehrdeutigen Vorgaben wird die erste aktuell mögliche Lösung verwendet.
+- Musikfinder: Kostenlose, frei lizenzierte Downloads und kostenpflichtige Kaufangebote nach Titel und Interpret suchen; fehlertoleranter Abgleich, soweit möglich Datei-Tag-Prüfung, Ausgabe der drei günstigsten passenden Treffer aus öffentlichen Quellen ohne persönliche API-Zugangsdaten; kostenlose Treffer mit direkter Prüfmöglichkeit und zusätzliche YouTube-Hörreferenz.
 
-Die Kernfunktionen arbeiten lokal auf dem Gerät. Die App enthält keine Werbung und keine
+Zauberwürfel und Sudoku arbeiten lokal auf dem Gerät; der Musikfinder benötigt für seine Suche eine Internetverbindung. Die App enthält keine Werbung und keine
 Analytics-Komponente.
 
 ## Kategorie-Vorschlag

@@ -1,10 +1,12 @@
-const APP_VERSION = '1.2.2';
+// BUILD: 17
+const APP_VERSION = '1.3.0';
 const CACHE = `hauckis-apps-${APP_VERSION}`;
 const ASSETS = [
   './', './index.html', './collection.css', './pwa.js', './manifest.webmanifest', './version.json',
   './icon-192.png', './icon-512.png',
   './cube.html', './cube.css', './cube-app.js', './cube.js', './solve.js',
   './sudoku.html', './sudoku.css', './sudoku-app.js', './sudoku-core.js',
+  './music.html', './music.css', './music-bundle.js', './music-app.js',
   './THIRD_PARTY_LICENSES.txt'
 ];
 
@@ -32,6 +34,13 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(event.request.url);
   const sameOrigin = url.origin === self.location.origin;
+
+  // Externe Musik-API- und Dateianfragen werden niemals vom PWA-Cache gespeichert.
+  if (!sameOrigin) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   const networkFirst = event.request.mode === 'navigate' ||
     (sameOrigin && /\.(?:js|css|json|webmanifest)$/i.test(url.pathname));
 

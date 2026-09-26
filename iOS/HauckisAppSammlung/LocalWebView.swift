@@ -39,6 +39,44 @@ struct LocalWebView: UIViewRepresentable {
             webView.loadFileURL(indexURL, allowingReadAccessTo: wwwURL)
         }
 
+        private func isMusicPage(_ webView: WKWebView) -> Bool {
+            webView.url?.lastPathComponent == "music.html"
+        }
+
+        private func allowedMusicHost(_ host: String) -> Bool {
+            host == "archive.org"
+                || host.hasSuffix(".archive.org")
+                || host == "commons.wikimedia.org"
+                || host == "upload.wikimedia.org"
+                || host == "itunes.apple.com"
+                || host == "music.apple.com"
+                || host == "ccmixter.org"
+                || host == "youtube.com"
+                || host == "www.youtube.com"
+                || host == "youtu.be"
+                || host == "inv.nadeko.net"
+                || host == "invidious.nerdvpn.de"
+                || host == "yt.chocolatemoo53.com"
+                || host == "invidious.tiekoetter.com"
+                || host == "api.freetouse.com"
+                || host == "freetouse.com"
+                || host.hasSuffix(".freetouse.com")
+        }
+
+        func webView(_ webView: WKWebView,
+                     createWebViewWith configuration: WKWebViewConfiguration,
+                     for navigationAction: WKNavigationAction,
+                     windowFeatures: WKWindowFeatures) -> WKWebView? {
+            if navigationAction.targetFrame == nil,
+               let url = navigationAction.request.url,
+               let host = url.host?.lowercased(),
+               isMusicPage(webView),
+               allowedMusicHost(host) {
+                UIApplication.shared.open(url)
+            }
+            return nil
+        }
+
         func webView(_ webView: WKWebView,
                      decidePolicyFor navigationAction: WKNavigationAction,
                      decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
@@ -47,12 +85,21 @@ struct LocalWebView: UIViewRepresentable {
                 return
             }
 
-            // Die App-Sammlung ist absichtlich lokal. Externe Navigation bleibt gesperrt.
             if url.isFileURL || url.scheme == "about" {
                 decisionHandler(.allow)
-            } else {
-                decisionHandler(.cancel)
+                return
             }
+
+            // Nur App 03 darf auf freigegebene Musikquellen verweisen.
+            if isMusicPage(webView),
+               let host = url.host?.lowercased(),
+               allowedMusicHost(host) {
+                UIApplication.shared.open(url)
+                decisionHandler(.cancel)
+                return
+            }
+
+            decisionHandler(.cancel)
         }
     }
 }
