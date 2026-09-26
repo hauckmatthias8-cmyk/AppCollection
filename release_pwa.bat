@@ -60,10 +60,23 @@ if errorlevel 1 (
 )
 
 set "GH_LOGIN="
-for /f "delims=" %%U in ('"%GH%" api user --jq ".login" 2^>nul') do set "GH_LOGIN=%%U"
+set "GH_LOGIN_FILE=%TEMP%\appcollection_gh_login_%RANDOM%_%RANDOM%.txt"
+
+"%GH%" api user --jq ".login" > "!GH_LOGIN_FILE!" 2>nul
+if errorlevel 1 (
+    if exist "!GH_LOGIN_FILE!" del /q "!GH_LOGIN_FILE!" >nul 2>&1
+    echo FEHLER: GitHub-Benutzer konnte nicht ueber die GitHub-API ermittelt werden.
+    echo Bitte pruefen mit:
+    echo   "%GH%" auth status --hostname github.com
+    echo   "%GH%" api user --jq ".login"
+    exit /b 1
+)
+
+set /p "GH_LOGIN="<"!GH_LOGIN_FILE!"
+del /q "!GH_LOGIN_FILE!" >nul 2>&1
 
 if not defined GH_LOGIN (
-    echo FEHLER: Angemeldeter GitHub-Benutzer konnte nicht ermittelt werden.
+    echo FEHLER: GitHub-API lieferte keinen Benutzernamen zurueck.
     exit /b 1
 )
 
