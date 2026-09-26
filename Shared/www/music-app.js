@@ -7,8 +7,15 @@
   const trackListInput = $('#track-list-input');
   const singleModeBtn = $('#single-mode-btn');
   const listModeBtn = $('#list-mode-btn');
+  const advancedModeBtn = $('#advanced-mode-btn');
   const singleMode = $('#single-mode');
   const listMode = $('#list-mode');
+  const advancedMode = $('#advanced-mode');
+  const advancedTitleBtn = $('#advanced-title-btn');
+  const advancedArtistBtn = $('#advanced-artist-btn');
+  const advancedQueryInput = $('#advanced-query-input');
+  const advancedQueryLabel = $('#advanced-query-label');
+  const advancedHelp = $('#advanced-help');
   const searchBtn = $('#search-btn');
   const statusBox = $('#status');
   const resultsBox = $('#results');
@@ -38,6 +45,7 @@
   const MAX_OFFERS_PER_BUNDLE_TRACK = 8;
   const MAX_HEADER_CHECKS = 8;
   let searchMode = 'single';
+  let advancedKind = 'title-artists';
 
   function setStatus(text, visible = true) {
     statusBox.textContent = text;
@@ -244,6 +252,62 @@
     return `https://www.youtube.com/results?search_query=${encodeURIComponent(`${title} ${artist}`.trim())}`;
   }
 
+
+  function canonicalTrackFromOffers(offers, fallbackTitle, fallbackArtist, youtubeRef=null) {
+    // Höchste Priorität: strukturierte YouTube-Musikmetadaten.
+    const ytTitle=String(youtubeRef?.musicTrack?.song || '').trim();
+    const ytArtist=String(youtubeRef?.musicTrack?.artist || '').trim();
+    if(ytTitle && ytArtist){
+      return {title:ytTitle,artist:ytArtist,source:'YouTube musicTracks'};
+    }
+
+    // Danach den besten tatsächlich gefundenen Provider-Treffer verwenden.
+    // Hier zählt die Trefferqualität, nicht der Preis, weil es nur um die
+    // kanonische Schreibweise für den Suchlink geht.
+    const candidates=arrayify(offers)
+      .filter(x=>String(x?.title || '').trim() && String(x?.artist || '').trim())
+      .slice()
+      .sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0));
+
+    if(candidates.length){
+      return {
+        title:String(candidates[0].title).trim(),
+        artist:String(candidates[0].artist).trim(),
+        source:String(candidates[0].source || 'Provider')
+      };
+    }
+
+    // Falls nur YouTube einen professionellen Treffer gefunden hat,
+    // dessen bereinigte Metadaten verwenden.
+    const ytArtistClean=cleanYouTubeArtistName(String(youtubeRef?.author || '').trim());
+    const ytTitleClean=cleanYouTubeTitle(String(youtubeRef?.title || '').trim(),ytArtistClean);
+    if(ytTitleClean && ytArtistClean){
+      return {title:ytTitleClean,artist:ytArtistClean,source:'YouTube video'};
+    }
+
+    // Nur wenn wirklich nichts Verlässlicheres existiert, bleibt die Eingabe.
+    return {
+      title:String(fallbackTitle || '').trim(),
+      artist:String(fallbackArtist || '').trim(),
+      source:'Eingabe'
+    };
+  }
+
+  function applyCanonicalYouTubeSearch(youtubeRef, offers, fallbackTitle, fallbackArtist) {
+    const ref=youtubeRef || {
+      found:false,title:'',author:'',videoUrl:'',score:0,verifiedByMusicTrack:false
+    };
+    const canonical=canonicalTrackFromOffers(offers,fallbackTitle,fallbackArtist,ref);
+    ref.canonicalTitle=canonical.title;
+    ref.canonicalArtist=canonical.artist;
+    ref.canonicalSource=canonical.source;
+
+    // Entscheidend: Die URL selbst enthält bereits die korrigierte Schreibweise.
+    // Beim Öffnen zeigt deshalb auch die YouTube-Suchleiste genau diese Begriffe.
+    ref.searchUrl=youtubeSearchUrl(canonical.title,canonical.artist);
+    return ref;
+  }
+
   async function fetchJsonFromPublicInstance(base, path, timeoutMs = 7000) {
     return fetchJson(`${base}${path}`, timeoutMs);
   }
@@ -330,9 +394,23 @@
 
       if (bestScore < .42) continue;
 
+      const correctedArtist=String(
+        trackVerification?.artist ||
+        cleanYouTubeArtistName(best.author) ||
+        wantedArtist
+      ).trim();
+      const correctedTitle=String(
+        trackVerification?.song ||
+        cleanYouTubeTitle(best.title,correctedArtist) ||
+        wantedTitle
+      ).trim();
+
       return {
         found:true,
-        searchUrl:fallback.searchUrl,
+        searchUrl:youtubeSearchUrl(correctedTitle,correctedArtist),
+        canonicalTitle:correctedTitle,
+        canonicalArtist:correctedArtist,
+        canonicalSource:trackVerification?'YouTube musicTracks':'YouTube video',
         title:String(best.title || ''),
         author:String(best.author || ''),
         videoUrl:`https://www.youtube.com/watch?v=${encodeURIComponent(best.videoId)}`,
@@ -401,6 +479,11 @@
     s.target='_blank';
     s.rel='noopener noreferrer';
     s.textContent='YouTube-Suche öffnen';
+    const canonicalSearchTitle=String(ref?.canonicalTitle || wantedTitle || '').trim();
+    const canonicalSearchArtist=String(ref?.canonicalArtist || wantedArtist || '').trim();
+    if(canonicalSearchTitle || canonicalSearchArtist){
+      s.title=`YouTube-Suche: ${[canonicalSearchTitle,canonicalSearchArtist].filter(Boolean).join(' – ')}`;
+    }
     actions.append(s);
     card.append(actions);
 
@@ -967,19 +1050,459 @@
 
   function sleep(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
 
-  function setSearchMode(mode){
-    searchMode = mode === 'list' ? 'list' : 'single';
-    const list = searchMode === 'list';
-    singleMode.classList.toggle('hidden', list);
-    listMode.classList.toggle('hidden', !list);
-    singleModeBtn.classList.toggle('active', !list);
-    listModeBtn.classList.toggle('active', list);
-    singleModeBtn.setAttribute('aria-pressed', String(!list));
-    listModeBtn.setAttribute('aria-pressed', String(list));
-    searchBtn.textContent = list ? '3 günstigste Bundles suchen' : '3 günstigste Treffer suchen';
-    resultsBox.innerHTML = '';
+  function discoveryKey(value){
+    return normalize(value)
+      .replace(/\b(?:live|remix|remastered|remaster|radio edit|edit|version|mono|stereo)\b/g,' ')
+      .replace(/\s+/g,' ')
+      .trim();
+  }
+
+  function cleanYouTubeArtistName(value){
+    return String(value || '')
+      .replace(/\s*-\s*Topic\s*$/i,'')
+      .replace(/VEVO\s*$/i,'')
+      .trim();
+  }
+
+  function cleanYouTubeTitle(value, artist){
+    let s=String(value || '')
+      .replace(/\[[^\]]*(?:official|video|audio|lyrics?|visualizer)[^\]]*\]/ig,' ')
+      .replace(/\([^)]*(?:official|video|audio|lyrics?|visualizer)[^)]*\)/ig,' ')
+      .replace(/\b(?:official\s+)?(?:music\s+)?video\b/ig,' ')
+      .replace(/\bofficial\s+audio\b/ig,' ')
+      .replace(/\blyrics?\b/ig,' ')
+      .replace(/\s+/g,' ')
+      .trim();
+    const a=String(artist || '').trim();
+    if(a){
+      const escaped=a.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+      s=s.replace(new RegExp(`^${escaped}\\s*[-–—:]\\s*`,'i'),'')
+         .replace(new RegExp(`\\s*[-–—:]\\s*${escaped}$`,'i'),'')
+         .trim();
+    }
+    return s;
+  }
+
+  function addDiscovery(map, value, score, source, options={}){
+    value=String(value || '').trim();
+    if(!value) return;
+    const key=discoveryKey(value);
+    if(!key || key.length<2) return;
+
+    let item=map.get(key);
+    if(!item){
+      item={
+        value,
+        score:Number(score)||0,
+        sources:new Set(),
+        examples:[],
+        youtubeUrls:new Set(),
+        sourceUrls:new Set()
+      };
+      map.set(key,item);
+    }
+    item.score=Math.max(item.score,Number(score)||0);
+    if(source) item.sources.add(source);
+    if(options.example && !item.examples.includes(options.example)) item.examples.push(options.example);
+    if(options.youtubeUrl) item.youtubeUrls.add(options.youtubeUrl);
+    if(options.sourceUrl) item.sourceUrls.add(options.sourceUrl);
+  }
+
+  function finaliseDiscovery(map){
+    return [...map.values()]
+      .map(x=>({
+        ...x,
+        sources:[...x.sources],
+        youtubeUrls:[...x.youtubeUrls],
+        sourceUrls:[...x.sourceUrls],
+        examples:x.examples.slice(0,3)
+      }))
+      .sort((a,b)=>
+        b.sources.length-a.sources.length ||
+        b.score-a.score ||
+        a.value.localeCompare(b.value,'de',{sensitivity:'base'})
+      );
+  }
+
+  async function discoverItunes(kind, query){
+    const u=new URL('https://itunes.apple.com/search');
+    u.searchParams.set('term',query);
+    u.searchParams.set('country','DE');
+    u.searchParams.set('media','music');
+    u.searchParams.set('entity','song');
+    u.searchParams.set('limit','200');
+    u.searchParams.set('explicit','Yes');
+
+    let data;
+    try{ data=await jsonp(u.toString(),15000); }catch(_){ return []; }
+    const out=[];
+    for(const item of data?.results || []){
+      if(item.kind!=='song') continue;
+      const title=String(item.trackName || '').trim();
+      const artist=String(item.artistName || '').trim();
+      if(!title || !artist) continue;
+
+      if(kind==='title-artists'){
+        const score=similarity(title,query);
+        if(score<.68) continue;
+        out.push({value:artist,score,source:'Apple / iTunes',example:title,sourceUrl:item.trackViewUrl || ''});
+      }else{
+        const score=similarity(artist,query);
+        if(score<.70) continue;
+        out.push({value:title,score,source:'Apple / iTunes',example:artist,sourceUrl:item.trackViewUrl || ''});
+      }
+    }
+    return out;
+  }
+
+  async function discoverFreeToUse(kind, query){
+    const u=new URL('https://api.freetouse.com/v3/music/tracks/search');
+    u.searchParams.set('query',query);
+    u.searchParams.set('limit','100');
+    u.searchParams.set('offset','0');
+    let data;
+    try{ data=await fetchJson(u.toString(),15000); }catch(_){ return []; }
+
+    const out=[];
+    for(const track of data?.data || []){
+      const title=String(track?.title || '').trim();
+      const artists=freeToUseArtistNames(track);
+      if(!title || !artists.length) continue;
+
+      if(kind==='title-artists'){
+        const score=similarity(title,query);
+        if(score<.68) continue;
+        for(const artist of artists) out.push({value:artist,score,source:'Free To Use',example:title,sourceUrl:'https://freetouse.com/music'});
+      }else{
+        const scores=artists.map(a=>similarity(a,query));
+        const score=Math.max(...scores,0);
+        if(score<.68) continue;
+        out.push({value:title,score,source:'Free To Use',example:artists.join(', '),sourceUrl:'https://freetouse.com/music'});
+      }
+    }
+    return out;
+  }
+
+  async function discoverCcMixter(kind, query){
+    const u=new URL('https://ccmixter.org/api/pool/search');
+    u.searchParams.set('query',query);
+    u.searchParams.set('type','any');
+    u.searchParams.set('limit','100');
+    u.searchParams.set('format','rss');
+
+    let xmlText;
+    try{ xmlText=await fetchText(u.toString(),15000); }catch(_){ return []; }
+    let doc;
+    try{
+      doc=new DOMParser().parseFromString(xmlText,'application/xml');
+      if(doc.querySelector('parsererror')) return [];
+    }catch(_){ return []; }
+
+    const out=[];
+    for(const item of doc.getElementsByTagName('item')){
+      const title=xmlFirstText(item,['title']);
+      const artist=xmlFirstText(item,['creator','author']);
+      const link=xmlFirstText(item,['link','guid']);
+      if(!title || !artist) continue;
+      if(kind==='title-artists'){
+        const score=similarity(title,query);
+        if(score>=.68) out.push({value:artist,score,source:'ccMixter',example:title,sourceUrl:link});
+      }else{
+        const score=similarity(artist,query);
+        if(score>=.68) out.push({value:title,score,source:'ccMixter',example:artist,sourceUrl:link});
+      }
+    }
+    return out;
+  }
+
+  async function discoverCommons(kind, query){
+    const u=new URL('https://commons.wikimedia.org/w/api.php');
+    u.searchParams.set('action','query');
+    u.searchParams.set('generator','search');
+    u.searchParams.set('gsrsearch',`${query} filetype:audio`);
+    u.searchParams.set('gsrnamespace','6');
+    u.searchParams.set('gsrlimit','50');
+    u.searchParams.set('prop','imageinfo');
+    u.searchParams.set('iiprop','url|mime|extmetadata');
+    u.searchParams.set('format','json');
+    u.searchParams.set('origin','*');
+
+    let data;
+    try{ data=await fetchJson(u.toString(),15000); }catch(_){ return []; }
+    const out=[];
+    for(const page of Object.values(data?.query?.pages || {})){
+      const ii=page.imageinfo?.[0];
+      if(!ii || !String(ii.mime || '').startsWith('audio/')) continue;
+      const meta=ii.extmetadata || {};
+      const fileTitle=String(page.title || '').replace(/^File:/i,'').replace(/\.[a-z0-9]{2,5}$/i,'');
+      const title=stripHtml(meta.ObjectName?.value || meta.ImageDescription?.value || fileTitle);
+      const artist=stripHtml(meta.Artist?.value || meta.Credit?.value || '');
+      if(!title || !artist) continue;
+      if(kind==='title-artists'){
+        const score=similarity(title,query);
+        if(score>=.64) out.push({value:artist,score,source:'Wikimedia Commons',example:title,sourceUrl:ii.descriptionurl || ii.url});
+      }else{
+        const score=similarity(artist,query);
+        if(score>=.66) out.push({value:title,score,source:'Wikimedia Commons',example:artist,sourceUrl:ii.descriptionurl || ii.url});
+      }
+    }
+    return out;
+  }
+
+  async function discoverArchive(kind, query){
+    const u=new URL('https://archive.org/advancedsearch.php');
+    const esc=luceneEscape(query);
+    u.searchParams.set('q',kind==='title-artists'
+      ? `mediatype:audio AND title:("${esc}")`
+      : `mediatype:audio AND creator:("${esc}")`);
+    for(const f of ['identifier','title','creator']) u.searchParams.append('fl[]',f);
+    u.searchParams.set('rows','100');
+    u.searchParams.set('page','1');
+    u.searchParams.set('output','json');
+
+    let data;
+    try{ data=await fetchJson(u.toString(),15000); }catch(_){ return []; }
+    const out=[];
+    for(const doc of data?.response?.docs || []){
+      const title=Array.isArray(doc.title)?doc.title[0]:String(doc.title || '');
+      const artists=arrayify(doc.creator).flatMap(x=>String(x || '').split(/\s*;\s*/)).filter(Boolean);
+      if(!title || !artists.length) continue;
+      if(kind==='title-artists'){
+        const score=similarity(title,query);
+        if(score<.62) continue;
+        for(const artist of artists){
+          out.push({value:artist,score,source:'Internet Archive',example:title,sourceUrl:`https://archive.org/details/${encodeURIComponent(doc.identifier)}`});
+        }
+      }else{
+        const score=Math.max(...artists.map(a=>similarity(a,query)),0);
+        if(score<.64) continue;
+        out.push({value:title,score,source:'Internet Archive',example:artists.join(', '),sourceUrl:`https://archive.org/details/${encodeURIComponent(doc.identifier)}`});
+      }
+    }
+    return out;
+  }
+
+  function professionalYouTubeChannel(video){
+    const author=String(video?.author || '');
+    return video?.authorVerified===true || /\s-\sTopic$/i.test(author) || /VEVO$/i.test(author);
+  }
+
+  async function discoverYouTube(kind, query){
+    for(const base of YOUTUBE_SEARCH_INSTANCES){
+      const collected=[];
+      try{
+        for(const page of [1,2]){
+          const data=await fetchJsonFromPublicInstance(
+            base,
+            `/api/v1/search?q=${encodeURIComponent(`${query} music type:video sort:views`)}&page=${page}&region=DE`,
+            7500
+          );
+          collected.push(...arrayify(data).filter(x=>x?.type==='video' && x.videoId && professionalYouTubeChannel(x)));
+          if(collected.length>=30) break;
+        }
+      }catch(_){
+        continue;
+      }
+
+      if(!collected.length) continue;
+      const out=[];
+      for(const video of collected.slice(0,30)){
+        let details=null;
+        try{
+          details=await fetchJsonFromPublicInstance(base,`/api/v1/videos/${encodeURIComponent(video.videoId)}?region=DE`,6500);
+        }catch(_){}
+
+        const tracks=arrayify(details?.musicTracks);
+        const videoUrl=`https://www.youtube.com/watch?v=${encodeURIComponent(video.videoId)}`;
+
+        if(tracks.length){
+          for(const track of tracks){
+            const song=String(track?.song || '').trim();
+            const artist=String(track?.artist || '').trim();
+            if(!song || !artist) continue;
+            if(kind==='title-artists'){
+              const score=similarity(song,query);
+              if(score>=.70) out.push({value:artist,score,source:'YouTube (professionell)',example:song,youtubeUrl:videoUrl,sourceUrl:videoUrl});
+            }else{
+              const score=similarity(artist,query);
+              if(score>=.70) out.push({value:song,score,source:'YouTube (professionell)',example:artist,youtubeUrl:videoUrl,sourceUrl:videoUrl});
+            }
+          }
+          continue;
+        }
+
+        // Strict fallback: only verified/Topic/VEVO channels are allowed.
+        const cleanArtist=cleanYouTubeArtistName(video.author);
+        const cleanTitle=cleanYouTubeTitle(video.title,cleanArtist);
+        if(kind==='title-artists'){
+          const score=similarity(cleanTitle,query);
+          if(score>=.74 && cleanArtist) out.push({value:cleanArtist,score,source:'YouTube (verifiziert)',example:cleanTitle,youtubeUrl:videoUrl,sourceUrl:videoUrl});
+        }else{
+          const score=similarity(cleanArtist,query);
+          if(score>=.74 && cleanTitle) out.push({value:cleanTitle,score,source:'YouTube (verifiziert)',example:cleanArtist,youtubeUrl:videoUrl,sourceUrl:videoUrl});
+        }
+      }
+      return out;
+    }
+    return [];
+  }
+
+  async function runAdvancedDiscovery(kind,query){
+    const settled=await Promise.allSettled([
+      discoverItunes(kind,query),
+      discoverFreeToUse(kind,query),
+      discoverCcMixter(kind,query),
+      discoverCommons(kind,query),
+      discoverArchive(kind,query),
+      discoverYouTube(kind,query)
+    ]);
+
+    const names=['Apple / iTunes','Free To Use','ccMixter','Wikimedia Commons','Internet Archive','YouTube'];
+    const failed=[];
+    const map=new Map();
+    settled.forEach((result,index)=>{
+      if(result.status==='rejected'){
+        failed.push(names[index]);
+        return;
+      }
+      for(const item of result.value || []){
+        addDiscovery(map,item.value,item.score,item.source,item);
+      }
+    });
+    return {items:finaliseDiscovery(map),failed};
+  }
+
+  function renderDiscovery(items,kind,query,failed=[]){
+    resultsBox.innerHTML='';
     clearYouTubeReference();
-    setStatus('', false);
+
+    const summary=document.createElement('div');
+    summary.className='discovery-summary';
+    const noun=kind==='title-artists'?'unterschiedliche Interpreten':'unterschiedliche Titel';
+    summary.textContent=`${items.length} ${noun} gefunden. Ergebnisse werden aus allen erreichbaren eingebundenen Quellen zusammengeführt.`;
+    resultsBox.append(summary);
+
+    const list=document.createElement('div');
+    list.className='discovery-list';
+
+    for(const item of items){
+      const card=document.createElement('article');
+      card.className='discovery-card';
+
+      const head=document.createElement('div');
+      head.className='discovery-head';
+      const value=document.createElement('div');
+      value.className='discovery-value';
+      value.textContent=item.value;
+      const score=document.createElement('div');
+      score.className='discovery-score';
+      score.textContent=`Abgleich ${Math.round((item.score||0)*100)} %`;
+      head.append(value,score);
+
+      const sources=document.createElement('div');
+      sources.className='discovery-sources';
+      sources.textContent=`Quellen: ${item.sources.join(', ')}`;
+
+      const example=document.createElement('div');
+      example.className='discovery-example';
+      if(kind==='title-artists'){
+        example.textContent=`Gefundener Titel: ${item.examples[0] || query}`;
+      }else{
+        example.textContent=`Gefundener Interpret: ${item.examples[0] || query}`;
+      }
+
+      const actions=document.createElement('div');
+      actions.className='discovery-actions';
+
+      const use=document.createElement('button');
+      use.type='button';
+      use.className='discovery-action primary-action';
+      use.textContent='Als Einzelsuche übernehmen';
+      use.addEventListener('click',()=>{
+        setSearchMode('single');
+        if(kind==='title-artists'){
+          titleInput.value=query;
+          artistInput.value=item.value;
+        }else{
+          titleInput.value=item.value;
+          artistInput.value=query;
+        }
+        window.scrollTo({top:0,behavior:'smooth'});
+      });
+      actions.append(use);
+
+      if(item.youtubeUrls.length){
+        const yt=document.createElement('a');
+        yt.className='discovery-action youtube-action';
+        yt.href=item.youtubeUrls[0];
+        yt.target='_blank';
+        yt.rel='noopener noreferrer';
+        yt.textContent='YouTube prüfen';
+        actions.append(yt);
+      }
+
+      if(item.sourceUrls.length){
+        const sourceLink=document.createElement('a');
+        sourceLink.className='discovery-action';
+        sourceLink.href=item.sourceUrls[0];
+        sourceLink.target='_blank';
+        sourceLink.rel='noopener noreferrer';
+        sourceLink.textContent='Quelle öffnen';
+        actions.append(sourceLink);
+      }
+
+      card.append(head,sources,example,actions);
+      list.append(card);
+    }
+    resultsBox.append(list);
+
+    if(failed.length){
+      const warning=document.createElement('div');
+      warning.className='bundle-warning';
+      warning.textContent=`Zeitweise nicht erreichbare Quellen: ${[...new Set(failed)].join(', ')}. Die angezeigte Liste kann deshalb unvollständig sein.`;
+      resultsBox.append(warning);
+    }
+  }
+
+  function setAdvancedKind(kind){
+    advancedKind=kind==='artist-titles'?'artist-titles':'title-artists';
+    const byArtist=advancedKind==='artist-titles';
+    advancedTitleBtn.classList.toggle('active',!byArtist);
+    advancedArtistBtn.classList.toggle('active',byArtist);
+    advancedTitleBtn.setAttribute('aria-pressed',String(!byArtist));
+    advancedArtistBtn.setAttribute('aria-pressed',String(byArtist));
+    advancedQueryLabel.textContent=byArtist?'Interpret':'Titel';
+    advancedQueryInput.placeholder=byArtist?'z. B. Metallica':'z. B. Hallelujah';
+    advancedHelp.textContent=byArtist
+      ? 'Findet alle unterschiedlichen Titel, die diesem Interpreten in den eingebundenen Quellen zugeordnet werden. YouTube wird nur über professionelle/verifizierte Musiktreffer berücksichtigt.'
+      : 'Findet alle unterschiedlichen Interpreten, die zu diesem Titel in den eingebundenen Quellen gefunden werden. YouTube-Beiträge werden nur aus professionellen/verifizierten Musikquellen übernommen; typische Laienvideos werden herausgefiltert.';
+    if(searchMode==='advanced') searchBtn.textContent=byArtist?'Alle Titel finden':'Alle Interpreten finden';
+  }
+
+  function setSearchMode(mode){
+    searchMode = ['single','list','advanced'].includes(mode) ? mode : 'single';
+    const single=searchMode==='single';
+    const list=searchMode==='list';
+    const advanced=searchMode==='advanced';
+
+    singleMode.classList.toggle('hidden',!single);
+    listMode.classList.toggle('hidden',!list);
+    advancedMode.classList.toggle('hidden',!advanced);
+
+    singleModeBtn.classList.toggle('active',single);
+    listModeBtn.classList.toggle('active',list);
+    advancedModeBtn.classList.toggle('active',advanced);
+    singleModeBtn.setAttribute('aria-pressed',String(single));
+    listModeBtn.setAttribute('aria-pressed',String(list));
+    advancedModeBtn.setAttribute('aria-pressed',String(advanced));
+
+    if(list) searchBtn.textContent='3 günstigste Bundles suchen';
+    else if(advanced) searchBtn.textContent=advancedKind==='artist-titles'?'Alle Titel finden':'Alle Interpreten finden';
+    else searchBtn.textContent='3 günstigste Treffer suchen';
+
+    resultsBox.innerHTML='';
+    clearYouTubeReference();
+    setStatus('',false);
   }
 
   function sortOffers(all){
@@ -1148,11 +1671,21 @@
     }
 
     setStatus('Suche kostenlose und kostenpflichtige Angebote sowie eine YouTube-Prüfreferenz …');
-    const [result,youtubeReference]=await Promise.all([
+    const [result,rawYoutubeReference]=await Promise.all([
       collectOffers(wantedTitle,wantedArtist,{compact:false,headerChecks:MAX_HEADER_CHECKS}),
       searchYouTubeReference(wantedTitle,wantedArtist)
     ]);
-    renderYouTubeReference(youtubeReference,wantedTitle,wantedArtist);
+    const youtubeReference=applyCanonicalYouTubeSearch(
+      rawYoutubeReference,
+      result.offers,
+      wantedTitle,
+      wantedArtist
+    );
+    renderYouTubeReference(
+      youtubeReference,
+      youtubeReference.canonicalTitle || wantedTitle,
+      youtubeReference.canonicalArtist || wantedArtist
+    );
     let all=result.offers.slice(0,MAX_RESULTS);
     if(!all.length){
       setStatus(result.failed.length
@@ -1182,11 +1715,16 @@
     for(let i=0;i<parsed.tracks.length;i++){
       const req=parsed.tracks[i];
       setStatus(`Suche Titel ${i+1}/${parsed.tracks.length}: ${req.title} – ${req.artist} …`);
-      const [result,youtubeReference]=await Promise.all([
+      const [result,rawYoutubeReference]=await Promise.all([
         collectOffers(req.title,req.artist,{compact:true,headerChecks:2}),
         searchYouTubeReference(req.title,req.artist)
       ]);
-      req.youtubeReference=youtubeReference;
+      req.youtubeReference=applyCanonicalYouTubeSearch(
+        rawYoutubeReference,
+        result.offers,
+        req.title,
+        req.artist
+      );
       failed.push(...result.failed);
       const offers=result.offers.slice(0,MAX_OFFERS_PER_BUNDLE_TRACK);
       if(!offers.length) missing.push(req);
@@ -1207,6 +1745,24 @@
     setStatus(`${bundles.length} günstigste vollständige Bundle${bundles.length===1?'':'s'} für ${parsed.tracks.length} Titel gefunden.${duplicateNote}`);
   }
 
+  async function runAdvancedSearch(){
+    const query=advancedQueryInput.value.trim();
+    if(!query){
+      setStatus(advancedKind==='artist-titles'?'Bitte einen Interpreten angeben.':'Bitte einen Titel angeben.');
+      return;
+    }
+    const label=advancedKind==='artist-titles'?'Titel':'Interpreten';
+    setStatus(`Erweiterte Suche: ermittle ${label} aus allen eingebundenen Quellen …`);
+    const result=await runAdvancedDiscovery(advancedKind,query);
+    if(!result.items.length){
+      renderDiscovery([],advancedKind,query,result.failed);
+      setStatus(`Keine passenden ${label} gefunden.${result.failed.length?' Einige Quellen waren nicht erreichbar.':''}`);
+      return;
+    }
+    renderDiscovery(result.items,advancedKind,query,result.failed);
+    setStatus(`${result.items.length} unterschiedliche ${label} gefunden.${result.failed.length?' Einige Quellen waren nicht erreichbar; die Liste kann unvollständig sein.':''}`);
+  }
+
   async function runSearch(){
     if(!navigator.onLine){
       setStatus('Keine Internetverbindung. Der Musikfinder ist die einzige Online-App der Sammlung.');
@@ -1215,10 +1771,12 @@
     searchBtn.disabled=true;
     singleModeBtn.disabled=true;
     listModeBtn.disabled=true;
+    advancedModeBtn.disabled=true;
     resultsBox.innerHTML='';
     clearYouTubeReference();
     try{
       if(searchMode==='list') await runListSearch();
+      else if(searchMode==='advanced') await runAdvancedSearch();
       else await runSingleSearch();
     }catch(err){
       console.error(err);
@@ -1227,11 +1785,15 @@
       searchBtn.disabled=false;
       singleModeBtn.disabled=false;
       listModeBtn.disabled=false;
+      advancedModeBtn.disabled=false;
     }
   }
 
   singleModeBtn.addEventListener('click',()=>setSearchMode('single'));
   listModeBtn.addEventListener('click',()=>setSearchMode('list'));
+  advancedModeBtn.addEventListener('click',()=>setSearchMode('advanced'));
+  advancedTitleBtn.addEventListener('click',()=>setAdvancedKind('title-artists'));
+  advancedArtistBtn.addEventListener('click',()=>setAdvancedKind('artist-titles'));
   searchBtn.addEventListener('click',runSearch);
   [titleInput,artistInput].forEach(el=>el.addEventListener('keydown',e=>{
     if(e.key==='Enter') runSearch();
@@ -1239,5 +1801,9 @@
   trackListInput.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey) && e.key==='Enter') runSearch();
   });
+  advancedQueryInput.addEventListener('keydown',e=>{
+    if(e.key==='Enter') runSearch();
+  });
+  setAdvancedKind('title-artists');
   setSearchMode('single');
 })();

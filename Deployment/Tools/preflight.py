@@ -125,6 +125,28 @@ if "www.youtube.com" not in read("Android/app/src/main/java/de/matthiashauck/app
 if "www.youtube.com" not in read("iOS/HauckisAppSammlung/LocalWebView.swift"):
     errors.append("iOS-Allowlist enthält YouTube nicht.")
 
+
+# Erweiterte Suche des Musikfinders
+for token in ["advanced-mode-btn", "advanced-title-btn", "advanced-artist-btn", "advanced-query-input"]:
+    if token not in music_html:
+        errors.append(f"Musikfinder: UI der erweiterten Suche fehlt: {token}")
+for token in ["runAdvancedSearch", "runAdvancedDiscovery", "discoverItunes", "discoverYouTube", "professionalYouTubeChannel"]:
+    if token not in music_js:
+        errors.append(f"Musikfinder: Logik der erweiterten Suche fehlt: {token}")
+if "authorVerified===true" not in music_js or "-\\s*Topic" not in music_js and "Topic$" not in music_js:
+    errors.append("Musikfinder: YouTube-Profi-Filter der erweiterten Suche fehlt.")
+if "result.items.length" not in music_js:
+    errors.append("Musikfinder: erweiterte Suche scheint keine vollständige Ergebnisliste auszugeben.")
+
+
+# YouTube-Suchlinks müssen nach einem Treffer die gefundene Schreibweise verwenden.
+if "applyCanonicalYouTubeSearch" not in music_js or "canonicalTrackFromOffers" not in music_js:
+    errors.append("Musikfinder: kanonische Schreibweise für YouTube-Suchlinks fehlt.")
+if "ref.searchUrl=youtubeSearchUrl(canonical.title,canonical.artist)" not in music_js:
+    errors.append("Musikfinder: YouTube-Such-URL wird nicht aus der gefundenen Schreibweise erzeugt.")
+if "req.youtubeReference=applyCanonicalYouTubeSearch" not in music_js:
+    errors.append("Musikfinder: korrigierte YouTube-Suchlinks fehlen in der Bundle-/Listensuche.")
+
 # PWA-Grundprüfung
 manifest = read("Shared/www/manifest.webmanifest")
 if FULL_NAME not in manifest:

@@ -38,3 +38,5 @@ Utilities / Tools beziehungsweise Productivity.
 - Datenschutz-URL
 - Kontakt-E-Mail
 - Screenshots für iPhone/iPad und Android
+
+- Erweiterte Suche im Musikfinder: alle gefundenen Interpreten zu einem Titel bzw. alle gefundenen Titel eines Interpreten; professionelle YouTube-Treffer werden als Referenz berücksichtigt.

@@ -38,3 +38,10 @@ Die App darf jedoch nach einem passenden öffentlichen YouTube-Video suchen und 
 Anhören/Prüfen anbieten. Da die offizielle YouTube Data API einen API-Key verlangt, nutzt die App dafür ausschließlich
 öffentliche Invidious-Suchendpunkte, die keine persönlichen Zugangsdaten erfordern. Fällt diese Suche aus, darf nur ein
 normaler YouTube-Suchlink angeboten werden.
+
+## Erweiterte Suche
+
+Die erweiterte Suche darf aus den bestehenden öffentlichen Quellen Interpret-/Titel-Zuordnungen ableiten.
+YouTube-Ergebnisse dürfen hierfür nur berücksichtigt werden, wenn sie als professionelle Musikquelle plausibel sind:
+verifizierter Kanal, `- Topic`-/VEVO-Kanal und/oder strukturierte `musicTracks`-Metadaten. Normale unbestätigte
+Benutzer-/Laienvideos dürfen nicht in die Ergebnisliste aufgenommen werden.

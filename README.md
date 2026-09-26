@@ -29,6 +29,7 @@ Multiplattform-Projekt mit einer gemeinsamen lokalen App-Codebasis. Der bevorzug
 - Fehlertoleranter Vergleich, damit kleinere Schreibfehler nicht sofort zu „kein Treffer“ führen.
 - Aktuelle Download-/Kaufquellen: Wikimedia Commons, Internet Archive, ccMixter, Free To Use und Apple/iTunes Store.
 - YouTube wird zusätzlich als reine Hör-/Prüfreferenz durchsucht. Die Suche läuft ohne persönliche Zugangsdaten über öffentliche Invidious-API-Instanzen; YouTube wird nicht als Downloadquelle und nicht in der Preisberechnung verwendet.
+- YouTube-Suchlinks verwenden nach erfolgreichem Abgleich die tatsächlich gefundene Schreibweise von Titel und Interpret. Dadurch wird auch die YouTube-Suchleiste mit der korrigierten Schreibweise geöffnet und nicht mit möglichen Tippfehlern aus der Eingabe.
 - Internet-Archive-Treffer werden nur berücksichtigt, wenn die Quelle eine explizite freie Lizenz/Public-Domain-Kennzeichnung liefert.
 - Bei direkt lesbaren Dateien versucht die App zusätzlich, eingebettete Datei-Tags (u. a. ID3, FLAC/Vorbis, Ogg/Vorbis, WAV/INFO) mit Titel und Interpret abzugleichen.
 - Bestätigte Tag-Widersprüche werden nicht als Downloadtreffer angeboten.
@@ -76,7 +77,7 @@ Ein Release ist absichtlich ein manueller Vorgang. **Weder ein normaler Push noc
 Windows:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File Deployment/Tools/release.ps1 -Version 1.3.0 -BuildNumber 17
+powershell -ExecutionPolicy Bypass -File Deployment/Tools/release.ps1 -Version 1.3.0 -BuildNumber 19
 ```
 
 macOS/Linux:
@@ -135,4 +136,4 @@ Falls irgendwann nötig: **Actions → Build native Android + iOS manually → R
 
 ## Version
 
-Aktueller Projektstand: **1.3.0 / Build 17**.
+Aktueller Projektstand: **1.3.0 / Build 19**.

@@ -38,6 +38,7 @@
       <div class="mode-switch" role="group" aria-label="Suchmodus">
         <button id="single-mode-btn" class="mode-btn active" type="button">Einzeltitel</button>
         <button id="list-mode-btn" class="mode-btn" type="button">Titelliste</button>
+        <button id="advanced-mode-btn" class="mode-btn" type="button">Erweiterte Suche</button>
       </div>
 
       <div id="single-mode" class="search-mode">
@@ -62,11 +63,29 @@
         <p class="format-hint">Eine Zeile pro Titel: <b>Titel | Interpret</b>. Tab, Semikolon und „Titel - Interpret“ werden ebenfalls erkannt. Doppelte Zeilen werden nur einmal gesucht. Lange Listen werden nacheinander verarbeitet und benötigen entsprechend mehr Zeit.</p>
       </div>
 
+      <div id="advanced-mode" class="search-mode hidden">
+        <div class="advanced-kind-switch" role="group" aria-label="Erweiterte Suche">
+          <button id="advanced-title-btn" class="advanced-kind-btn active" type="button">Titel → Interpreten</button>
+          <button id="advanced-artist-btn" class="advanced-kind-btn" type="button">Interpret → Titel</button>
+        </div>
+        <label>
+          <span id="advanced-query-label">Titel</span>
+          <input id="advanced-query-input" type="text" autocomplete="off" autocapitalize="words"
+                 placeholder="z. B. Hallelujah">
+        </label>
+        <p id="advanced-help" class="format-hint">
+          Findet alle unterschiedlichen Interpreten, die zu diesem Titel in den eingebundenen Quellen gefunden werden.
+          YouTube-Beiträge werden nur übernommen, wenn sie aus einem verifizierten/Topic/VEVO-Kanal stammen oder
+          strukturierte Musik-Metadaten liefern; typische Laienvideos werden nicht aufgenommen.
+        </p>
+      </div>
+
       <button id="search-btn" class="primary">3 günstigste Treffer suchen</button>
       <p class="hint">
         Kleine Schreibfehler werden toleriert. Bei einer Titelliste werden vollständige Warenkörbe gebildet:
         ein Angebot pro gewünschtem Titel. Ein Bundle darf Angebote verschiedener Quellen kombinieren; ausgegeben werden
-        automatisch die drei günstigsten vollständigen Gesamtpreise.
+        automatisch die drei günstigsten vollständigen Gesamtpreise. Die „Erweiterte Suche“ ermittelt dagegen alle
+        unterschiedlichen Interpreten zu einem Titel bzw. alle gefundenen Titel eines Interpreten.
       </p>
     </section>
 
@@ -98,6 +117,12 @@
         Bei einer Einzelsuche werden maximal die drei günstigsten passenden Treffer angezeigt. Bei einer Titelliste berechnet
         die App aus den gefundenen Einzelangeboten die drei günstigsten vollständigen Bundles. Jedes Bundle enthält genau ein
         Angebot pro gewünschtem Titel und darf Quellen mischen. Preise stammen von der jeweiligen Quelle und können sich nachträglich ändern.
+      </p>
+      <p>
+        In der „Erweiterten Suche“ werden Treffer aus allen eingebundenen Katalogen zusammengeführt und Dubletten entfernt.
+        Bei „Titel → Interpreten“ wird nur der Titel fehlertolerant abgeglichen; bei „Interpret → Titel“ nur der Interpret.
+        Die Liste ist nicht auf drei Ergebnisse begrenzt. „Alle“ bedeutet dabei alle Treffer, die die derzeit eingebundenen
+        öffentlichen Quellen innerhalb ihrer jeweiligen Suchgrenzen liefern.
       </p>
       <p>
         Bei kostenlosen Download-Treffern steht zusätzlich „Direkt prüfen“ zur Verfügung. Der Link öffnet die angebotene
