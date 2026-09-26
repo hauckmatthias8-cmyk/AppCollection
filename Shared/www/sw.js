@@ -1,5 +1,5 @@
 // BUILD: 27
-const APP_VERSION = '1.0.1';
+const APP_VERSION = '1.2.0';
 const CACHE = `hauckis-apps-${APP_VERSION}`;
 const ASSETS = [
   './', './index.html', './collection.css', './install-guide.js', './pwa.js', './manifest.webmanifest', './version.json',
@@ -8,7 +8,7 @@ const ASSETS = [
   './sudoku.html', './sudoku.css', './sudoku-app.js', './sudoku-core.js',
   './music.html', './music.css', './music-bundle.js', './music-app.js',
   './crossword.html', './crossword.css', './crossword-core.js', './crossword-app.js', './crossword-data.js',
-  './THIRD_PARTY_LICENSES.txt', './LICENSE.txt', './NOTICE.txt', './OPENTHESAURUS_LICENSE.txt', './licenses.html', './privacy.html', './OPENTHESAURUS_LICENSE.txt'
+  './THIRD_PARTY_LICENSES.txt', './LICENSE.txt', './NOTICE.txt', './licenses.html', './privacy.html'
 ];
 
 self.addEventListener('install', event => {

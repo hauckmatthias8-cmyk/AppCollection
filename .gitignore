@@ -22,6 +22,10 @@ AuthKey_*.p8
 *.dSYM
 xcuserdata/
 
+# Python
+__pycache__/
+*.py[cod]
+
 # OS/editor
 .DS_Store
 Thumbs.db

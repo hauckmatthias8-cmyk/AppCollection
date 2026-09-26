@@ -1,36 +1,40 @@
 {
-  "catalog_version": 2,
-  "notes": "Großkatalog für App 04. Enthält den kuratierten/faktischen Starterbestand plus deduplizierte Synonymfragen aus einem OpenThesaurus-Textsnapshot; Quelldaten bleiben im Source lesbar und werden beim Publish gepackt.",
+  "catalog_version": 5,
+  "notes": "Statischer Kreuzworträtsel-Katalog mit exakt 30.000 global eindeutigen normalisierten Antworten in 30 Kategorien mit je 1.000 Antworten. Kategorien sind Metadaten und nicht Bestandteil der angezeigten Hinweise.",
   "sources": [
     {
-      "id": "facts:countries",
-      "description": "Faktische Staat-/Hauptstadt-Paare; deutsche Ländernamen über Babel/CLDR beim Erzeugen des Starter-Katalogs.",
-      "license_note": "Fakten; keine übernommenen Fließtexte."
-    },
-    {
-      "id": "seed:curated",
-      "description": "Original formulierte Kreuzworträtselhinweise zu Allgemeinwissen, Naturwissenschaft, Technik, Kultur und lateinischen Begriffen.",
-      "license_note": "Im Projekt selbst erzeugt."
-    },
-    {
-      "id": "seed:synonym",
-      "description": "Kleine manuell zusammengestellte Synonymgruppen als Startbestand.",
-      "license_note": "Im Projekt selbst erzeugt."
-    },
-    {
-      "id": "openthesaurus",
-      "description": "Aktive Ausbauquelle für Synonymfragen. Verwendeter Textsnapshot: OpenThesaurus, erzeugt 2015-03-23, öffentlich gespiegelt in PSeitz/germansynonyms. Originalquelle openthesaurus.de.",
-      "url": "https://www.openthesaurus.de/about/download",
-      "license": "LGPL-2.1-or-later (Snapshot-Header); OpenThesaurus bietet aktuelle Daten alternativ unter CC BY-SA 4.0 oder LGPL an.",
-      "snapshot": "2015-03-23",
+      "id": "project:selfmade-core",
+      "description": "Projekt-eigene, neu formulierte klassische Kreuzworträtselhinweise.",
+      "license": "Apache-2.0",
       "active": true
     },
     {
-      "id": "dewiktionary",
-      "description": "Vorgesehene Ausbauquelle für Bedeutungsfragen und Fremdwörter.",
-      "url": "https://dumps.wikimedia.org/dewiktionary/",
-      "license": "CC BY-SA / GFDL gemäß Wiktionary-Hinweisen",
-      "active": false
+      "id": "project:selfmade-expanded",
+      "description": "Projekt-eigene regelbasierte Erweiterungen aus dem selbst formulierten Grundstock.",
+      "license": "Apache-2.0",
+      "active": true
+    },
+    {
+      "id": "project:systematic-*",
+      "description": "Projekt-eigen regelbasiert erzeugte Zahl-, Einheiten-, Chemie-, Farb- und Musiktheorie-Hinweise.",
+      "license": "Apache-2.0",
+      "active": true
+    },
+    {
+      "id": "faker",
+      "description": "Lokale Faker-Referenzdaten für DE/AT/CH-Vornamen, Familiennamen und Berufe sowie internationale Städtenamen; die Hinweisformulierungen wurden im Projekt erzeugt.",
+      "url": "https://github.com/joke2k/faker",
+      "license": "MIT",
+      "version_used": "40.1.2",
+      "active": true
+    },
+    {
+      "id": "countryinfo",
+      "description": "Lokale CountryInfo-Referenzdaten für Verwaltungsgebiets-Namen; die Hinweisformulierungen wurden im Projekt erzeugt.",
+      "url": "https://github.com/porimol/countryinfo",
+      "license": "MIT",
+      "version_used": "0.1.2",
+      "active": true
     }
   ]
 }

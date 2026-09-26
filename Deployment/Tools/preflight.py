@@ -22,8 +22,8 @@ required = [
     "Shared/www/cube.js", "Shared/www/solve.js", "Shared/www/sudoku-core.js", "Shared/www/music-app.js", "Shared/www/music-bundle.js", "Shared/www/music.css",
     "Shared/www/crossword-core.js", "Shared/www/crossword-app.js", "Shared/www/crossword.css", "Shared/www/crossword-data.js",
     "Crossword/data/crossword_catalog.tsv", "Crossword/data/solution_words.txt", "Crossword/data/sources.json",
-    "Crossword/data/openthesaurus_groups.txt", "Crossword/data/catalog_stats.json", "Crossword/data/OPENTHESAURUS_LICENSE.txt",
-    "Deployment/Tools/expand_crossword_catalog.py", "Deployment/Tools/update_openthesaurus.py", "Shared/www/OPENTHESAURUS_LICENSE.txt",
+    "Crossword/data/catalog_stats.json",
+    "Deployment/Tools/validate_crossword_catalog.py", "Deployment/Tools/validate_crossword_catalog.py",
     "LICENSE", "NOTICE", "Shared/www/LICENSE.txt", "Shared/www/NOTICE.txt", "Shared/www/licenses.html", "Shared/www/privacy.html",
     "Android/app/src/main/AndroidManifest.xml", "Android/app/build.gradle",
     "iOS/HauckisAppSammlung/Info.plist",
@@ -137,7 +137,7 @@ if "youtube.com" not in android_main or "youtube.com" not in ios_webview:
 
 # Lizenz-/Quellenhinweise müssen öffentlich erreichbar sein.
 licenses_html = read("Shared/www/licenses.html")
-for token in ["Apache License 2.0","cube.js 1.3.2","OpenThesaurus","LGPL-2.1-or-later","YouTube/YouTube Music"]:
+for token in ["Apache License 2.0","cube.js 1.3.2","Faker","CountryInfo","MIT","YouTube/YouTube Music"]:
     if token not in licenses_html:
         errors.append(f"Lizenzseite unvollständig: {token}")
 if 'href="licenses.html"' not in index:
@@ -207,22 +207,22 @@ if "\tclue\t" in packed or "SCHMETTERLING\n" in packed:
     errors.append("Kreuzworträtsel-Datencontainer scheint Klartext zu enthalten.")
 
 try:
-    cp = subprocess.run([sys.executable, str(ROOT / "Deployment/Tools/expand_crossword_catalog.py"), "--check"],
+    cp = subprocess.run([sys.executable, str(ROOT / "Deployment/Tools/validate_crossword_catalog.py")],
                         cwd=ROOT, text=True, capture_output=True, timeout=30)
     if cp.returncode:
-        errors.append("Kreuzworträtsel-Großkatalog/Duplikatprüfung fehlgeschlagen: " + (cp.stderr.strip() or cp.stdout.strip()))
+        errors.append("Kreuzworträtsel-Katalogprüfung fehlgeschlagen: " + (cp.stderr.strip() or cp.stdout.strip()))
     else:
         print(cp.stdout.strip())
 except Exception as exc:
-    errors.append(f"Kreuzworträtsel-Großkatalogprüfung konnte nicht ausgeführt werden: {exc}")
+    errors.append(f"Kreuzworträtsel-Katalogprüfung konnte nicht ausgeführt werden: {exc}")
 
 # Der veröffentlichte Großkatalog soll bewusst im Zielbereich bleiben.
 try:
     import csv as _csv
     with (ROOT / "Crossword/data/crossword_catalog.tsv").open(encoding="utf-8", newline="") as _f:
         _rows = list(_csv.DictReader(_f, delimiter="\t"))
-    if not 100000 <= len(_rows) <= 150000:
-        errors.append(f"Kreuzworträtsel-Katalog außerhalb 100k–150k: {len(_rows)}")
+    if len(_rows) != 30000:
+        errors.append(f"Kreuzworträtsel-Katalog muss exakt 30.000 Einträge enthalten: {len(_rows)}")
     _seen=set(); _dups=0
     for _r in _rows:
         _k=(re.sub(r"[^A-Z]", "", (_r.get("answer") or "").upper()), " ".join((_r.get("clue") or "").split()).casefold())

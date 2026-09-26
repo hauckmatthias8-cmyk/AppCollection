@@ -179,8 +179,8 @@ echo Versionen aktualisieren...
 python Deployment/Tools/set_version.py "!NEW_VERSION!" "!NEW_BUILD!"
 if errorlevel 1 goto :failed
 
-echo Kreuzwortraetsel-Katalog pruefen/erweitern...
-python Deployment/Tools/expand_crossword_catalog.py
+echo Kreuzwortraetsel-Katalog validieren...
+python Deployment/Tools/validate_crossword_catalog.py
 if errorlevel 1 goto :failed
 
 echo Kreuzwortraetsel-Datenpaket bauen...
@@ -230,19 +230,55 @@ if errorlevel 1 goto :failed
 
 echo.
 echo Starte GitHub Pages Release fuer v!NEW_VERSION!...
-"%GH%" workflow run deploy-pages.yml --repo "%REPO%" --ref main -f "version_tag=v!NEW_VERSION!"
-if errorlevel 1 goto :failed
+
+set "RUN_CREATE_FILE=%TEMP%\appcollection_run_create_%RANDOM%_%RANDOM%.txt"
+set "RUN_ID_FILE=%TEMP%\appcollection_run_id_%RANDOM%_%RANDOM%.txt"
+if exist "!RUN_CREATE_FILE!" del /q "!RUN_CREATE_FILE!" >nul 2>&1
+if exist "!RUN_ID_FILE!" del /q "!RUN_ID_FILE!" >nul 2>&1
+
+set "PREV_RUN_ID="
+for /f "delims=" %%R in ('"%GH%" run list --repo "%REPO%" --workflow deploy-pages.yml --event workflow_dispatch --branch main --limit 1 --json databaseId --jq ".[0].databaseId" 2^>nul') do set "PREV_RUN_ID=%%R"
+
+"%GH%" workflow run deploy-pages.yml --repo "%REPO%" --ref main -f "version_tag=v!NEW_VERSION!" > "!RUN_CREATE_FILE!" 2>&1
+set "WORKFLOW_CREATE_EXIT=!ERRORLEVEL!"
+
+type "!RUN_CREATE_FILE!"
+
+if not "!WORKFLOW_CREATE_EXIT!"=="0" (
+    del /q "!RUN_CREATE_FILE!" >nul 2>&1
+    goto :failed
+)
+
+rem Primaer: Run-ID direkt aus der von "gh workflow run" ausgegebenen URL lesen.
+powershell.exe -NoProfile -Command ^
+  "$text=[IO.File]::ReadAllText($env:RUN_CREATE_FILE);" ^
+  "$m=[regex]::Match($text,'actions/runs/(\d+)');" ^
+  "if($m.Success){[IO.File]::WriteAllText($env:RUN_ID_FILE,$m.Groups[1].Value); exit 0}else{exit 1}" >nul 2>&1
 
 set "RUN_ID="
-for /L %%I in (1,1,30) do (
-    if not defined RUN_ID (
-        for /f "delims=" %%R in ('"%GH%" run list --repo "%REPO%" --workflow deploy-pages.yml --commit "!PUSHED_SHA!" --limit 1 --json databaseId --jq ".[0].databaseId" 2^>nul') do set "RUN_ID=%%R"
-        if not defined RUN_ID timeout /t 2 /nobreak >nul
+if exist "!RUN_ID_FILE!" set /p "RUN_ID="<"!RUN_ID_FILE!"
+
+rem Fallback: Falls eine gh-Version keine URL ausgibt, den Run per GitHub-API
+rem anhand des soeben gepushten Commit-SHA suchen.
+if not defined RUN_ID (
+    for /L %%I in (1,1,15) do (
+        if not defined RUN_ID (
+            "%GH%" api "repos/%REPO%/actions/workflows/deploy-pages.yml/runs?event=workflow_dispatch&head_sha=!PUSHED_SHA!&per_page=5" --jq ".workflow_runs[0].id" > "!RUN_ID_FILE!" 2>nul
+            if not errorlevel 1 (
+                set /p "RUN_ID="<"!RUN_ID_FILE!"
+            )
+            if not defined RUN_ID timeout /t 2 /nobreak >nul
+        )
     )
 )
 
+del /q "!RUN_CREATE_FILE!" >nul 2>&1
+if exist "!RUN_ID_FILE!" del /q "!RUN_ID_FILE!" >nul 2>&1
+
 if not defined RUN_ID (
-    echo FEHLER: Workflow wurde gestartet, aber die Run-ID konnte nicht gefunden werden.
+    echo FEHLER: Workflow wurde gestartet, aber die Run-ID konnte nicht ermittelt werden.
+    echo Der Release kann trotzdem bereits laufen. Bitte pruefen mit:
+    echo   "%GH%" run list --repo "%REPO%" --workflow deploy-pages.yml --limit 5
     exit /b 1
 )
 

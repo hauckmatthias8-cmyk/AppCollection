@@ -9,7 +9,7 @@ BUILD="$2"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 python3 Deployment/Tools/set_version.py "$VERSION" "$BUILD"
-python3 Deployment/Tools/expand_crossword_catalog.py
+python3 Deployment/Tools/validate_crossword_catalog.py
 python3 Deployment/Tools/build_crossword_data.py
 python3 Deployment/Tools/preflight.py
 echo

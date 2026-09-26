@@ -29,7 +29,7 @@ Multiplattform-Projekt mit einer gemeinsamen lokalen App-Codebasis. Der bevorzug
 - Fehlertoleranter Vergleich, damit kleinere Schreibfehler nicht sofort zu â€žkein Trefferâ€œ fÃ¼hren.
 - Aktuelle Download-/Kaufquellen: Wikimedia Commons, Internet Archive, ccMixter, Free To Use und Apple/iTunes Store.
 - Internet-Archive-Treffer werden jetzt gegen die tatsÃ¤chliche Dateiliste des Items geprÃ¼ft. Ein Treffer wird nur Ã¼bernommen, wenn mindestens eine echte Audio-Datei (z. B. MP3/FLAC/OGG/WAV/M4A/AAC/Opus) vorhanden ist; reine Cover-/Scan-/Bildfunde werden verworfen. In der erweiterten Suche fÃ¼hrt der PrÃ¼flink direkt zur validierten Audiodatei.
-- YouTube wird zusÃ¤tzlich als reine HÃ¶r-/PrÃ¼freferenz durchsucht. Die Suche lÃ¤uft ohne persÃ¶nliche Zugangsdaten Ã¼ber Ã¶ffentliche Invidious-API-Instanzen; YouTube wird nicht als Downloadquelle und nicht in der Preisberechnung verwendet.
+- YouTube/YouTube Music werden nicht automatisch abgefragt. Die App erzeugt ausschließlich nutzerinitiierte normale Suchlinks aus bereits über die freigegebenen Musikkataloge ermittelten Titel-/Interpret-Metadaten.
 - YouTube-Suchlinks verwenden nach erfolgreichem Abgleich die tatsÃ¤chlich gefundene Schreibweise von Titel und Interpret. Dadurch wird auch die YouTube-Suchleiste mit der korrigierten Schreibweise geÃ¶ffnet und nicht mit mÃ¶glichen Tippfehlern aus der Eingabe.
 - Internet-Archive-Treffer werden nur berÃ¼cksichtigt, wenn die Quelle eine explizite freie Lizenz/Public-Domain-Kennzeichnung liefert.
 - Bei direkt lesbaren Dateien versucht die App zusÃ¤tzlich, eingebettete Datei-Tags (u. a. ID3, FLAC/Vorbis, Ogg/Vorbis, WAV/INFO) mit Titel und Interpret abzugleichen.
@@ -54,8 +54,8 @@ Multiplattform-Projekt mit einer gemeinsamen lokalen App-Codebasis. Der bevorzug
 - Klickbare waagerechte und senkrechte Fragen, Tastatureingabe und lokale Fortschrittsspeicherung.
 - Fragenkatalog und LÃ¶sungswortliste liegen im Source lesbar unter `Crossword/data/`.
 - Beim Build erzeugt `Deployment/Tools/build_crossword_data.py` daraus einen komprimierten und reversibel verschleierten Datencontainer `Shared/www/crossword-data.js`. Die Klartextdateien werden nicht unter `Shared/www` verÃ¶ffentlicht.
-- `Deployment/Tools/update_openthesaurus.py` aktualisiert den OpenThesaurus-Quellbestand **nur auf bewussten manuellen Aufruf**; der normale Release lÃ¤dt nichts aus dem Internet.
-- Der aktuelle Offline-Katalog enthÃ¤lt **120.043 eindeutige Frage-Antwort-Paare** und **1.818 LÃ¶sungswÃ¶rter**. Der Klartext-Katalog ist rund **11 MB** groÃŸ; der fÃ¼r die PWA erzeugte komprimierte/verschleierte Container liegt bei rund **2,3 MB**. Der GroÃŸteil des Ausbaukatalogs basiert auf deduplizierten OpenThesaurus-Synonymrelationen (verwendeter Textsnapshot vom 23.03.2015); der kuratierte Allgemeinwissens-/Faktenbestand bleibt zusÃ¤tzlich enthalten. FÃ¼r das Update auf einen neueren OpenThesaurus-Dump liegt ein separater Daten-Update-Schritt im Projekt; der normale Release benÃ¶tigt dafÃ¼r kein Internet.
+- Der statische Offline-Katalog enthält **30.000 Frage-Antwort-Paare mit 30.000 global unterschiedlichen Lösungen**: 30 Kategorien mit jeweils 1.000 Lösungen.
+- Der Release greift für App 04 nicht auf das Internet zu: `validate_crossword_catalog.py` prüft den statischen Katalog, danach erzeugt `build_crossword_data.py` ausschließlich lokal den PWA-Datencontainer.
 
 
 ### PWA-Installation auf dem Handy
@@ -158,13 +158,13 @@ Falls irgendwann nÃ¶tig: **Actions â†’ Build native Android + iOS manuall
 
 ## Version
 
-Aktueller Projektstand: **1.0.1 / Build 2**.
+Aktueller Projektstand: **1.2.0 / Build 3**.
 
 
 ## Lizenzierung und Quellen
 
 - Projekt-eigener Code: Apache License 2.0 (`LICENSE`).
 - Drittanbieter-Code/-Daten behalten ihre eigene Lizenz; Ãœbersicht: `Shared/www/licenses.html` und `Shared/www/THIRD_PARTY_LICENSES.txt`.
-- OpenThesaurus-abgeleitete KreuzwortrÃ¤tsel-Daten: LGPL-2.1-or-later; Quelle wird sichtbar verlinkt, lesbare abgeleitete Daten bleiben im Source-Paket.
+- Kreuzworträtsel-Referenzdaten: Teile der Namens-, Berufs-, Städte- und Verwaltungsgebietslisten basieren auf Faker/CountryInfo (MIT); die Lizenztexte bleiben im Paket.
 - Musikfinder: Medien und Metadaten externer Quellen werden nicht durch dieses Projekt neu lizenziert. Der konkrete Quellen-/Lizenzlink bleibt maÃŸgeblich.
 - YouTube/YouTube Music werden nicht automatisiert abgefragt. Es werden ausschlieÃŸlich nutzerinitiierte Suchlinks aus bereits gefundenen Titel-/Interpret-Metadaten erzeugt.

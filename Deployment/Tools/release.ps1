@@ -7,7 +7,7 @@ $Root = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 Set-Location $Root
 
 python Deployment/Tools/set_version.py $Version $BuildNumber
-python Deployment/Tools/expand_crossword_catalog.py
+python Deployment/Tools/validate_crossword_catalog.py
 python Deployment/Tools/build_crossword_data.py
 python Deployment/Tools/preflight.py
 
