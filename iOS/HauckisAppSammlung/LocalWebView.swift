@@ -1,0 +1,102 @@
+import SwiftUI
+import WebKit
+
+struct LocalWebView: UIViewRepresentable {
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    func makeUIView(context: Context) -> WKWebView {
+        let config = WKWebViewConfiguration()
+        config.websiteDataStore = .default()
+        config.defaultWebpagePreferences.allowsContentJavaScript = true
+        config.mediaTypesRequiringUserActionForPlayback = .all
+
+        let webView = WKWebView(frame: .zero, configuration: config)
+        webView.navigationDelegate = context.coordinator
+        webView.uiDelegate = context.coordinator
+        webView.isOpaque = false
+        webView.backgroundColor = UIColor(red: 7 / 255, green: 17 / 255, blue: 28 / 255, alpha: 1)
+        webView.scrollView.backgroundColor = webView.backgroundColor
+        webView.scrollView.contentInsetAdjustmentBehavior = .never
+        webView.allowsBackForwardNavigationGestures = true
+
+        context.coordinator.webView = webView
+        context.coordinator.loadStartPage()
+        return webView
+    }
+
+    func updateUIView(_ uiView: WKWebView, context: Context) {}
+
+    final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
+        weak var webView: WKWebView?
+
+        func loadStartPage() {
+            guard let webView else { return }
+            guard let resourceURL = Bundle.main.resourceURL else { return }
+            let wwwURL = resourceURL.appendingPathComponent("www", isDirectory: true)
+            let indexURL = wwwURL.appendingPathComponent("index.html")
+            webView.loadFileURL(indexURL, allowingReadAccessTo: wwwURL)
+        }
+
+        private func isMusicPage(_ webView: WKWebView) -> Bool {
+            webView.url?.lastPathComponent == "music.html"
+        }
+
+        private func allowedMusicHost(_ host: String) -> Bool {
+            host == "archive.org"
+                || host.hasSuffix(".archive.org")
+                || host == "commons.wikimedia.org"
+                || host == "upload.wikimedia.org"
+                || host == "itunes.apple.com"
+                || host == "music.apple.com"
+                || host == "ccmixter.org"
+                || host == "youtube.com"
+                || host == "www.youtube.com"
+                || host == "music.youtube.com"
+                || host == "youtu.be"
+                || host == "api.freetouse.com"
+                || host == "freetouse.com"
+                || host.hasSuffix(".freetouse.com")
+        }
+
+        func webView(_ webView: WKWebView,
+                     createWebViewWith configuration: WKWebViewConfiguration,
+                     for navigationAction: WKNavigationAction,
+                     windowFeatures: WKWindowFeatures) -> WKWebView? {
+            if navigationAction.targetFrame == nil,
+               let url = navigationAction.request.url,
+               let host = url.host?.lowercased(),
+               isMusicPage(webView),
+               allowedMusicHost(host) {
+                UIApplication.shared.open(url)
+            }
+            return nil
+        }
+
+        func webView(_ webView: WKWebView,
+                     decidePolicyFor navigationAction: WKNavigationAction,
+                     decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            guard let url = navigationAction.request.url else {
+                decisionHandler(.cancel)
+                return
+            }
+
+            if url.isFileURL || url.scheme == "about" {
+                decisionHandler(.allow)
+                return
+            }
+
+            // Nur App 03 darf auf freigegebene Musikquellen verweisen.
+            if isMusicPage(webView),
+               let host = url.host?.lowercased(),
+               allowedMusicHost(host) {
+                UIApplication.shared.open(url)
+                decisionHandler(.cancel)
+                return
+            }
+
+            decisionHandler(.cancel)
+        }
+    }
+}

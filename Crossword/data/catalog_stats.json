@@ -1,0 +1,17 @@
+{
+  "catalog_version": 2,
+  "starter_entries": 1043,
+  "openthesaurus_groups": 374,
+  "directed_synonym_pairs_before_pair_dedupe": 40006,
+  "directed_pair_duplicates_removed": 264,
+  "unique_directed_synonym_pairs": 39742,
+  "single_hint_synonym_rows": 39742,
+  "available_unique_two_hint_rows": 191670,
+  "selected_two_hint_rows": 79258,
+  "generated_synonym_candidates": 119000,
+  "all_candidates_before_final_dedupe": 120043,
+  "final_duplicate_or_invalid_rows_removed": 0,
+  "final_entries": 120043,
+  "solution_words_final": 1818,
+  "source_snapshot": "OpenThesaurus text snapshot generated 2015-03-23 (public mirror); original source openthesaurus.de"
+}

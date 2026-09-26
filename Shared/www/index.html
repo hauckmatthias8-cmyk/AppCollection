@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#07111c">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Hauckis Apps">
+  <link rel="stylesheet" href="collection.css">
+  <title>Hauckis möglicherweise nützliche App-Sammlung</title>
+</head>
+<body>
+  <main class="library-shell">
+    <header class="library-hero">
+      <div class="collection-mark image-mark"><img src="icon-192.png" alt=""></div>
+      <div>
+        <h1>Hauckis möglicherweise nützliche App-Sammlung</h1>
+        <p>Eine lokale Sammlung kleiner Helfer. App auswählen und loslegen.</p>
+      </div>
+    </header>
+
+
+    <section class="install-card" aria-labelledby="install-title">
+      <div class="install-heading">
+        <div>
+          <div class="install-kicker">Auf dem Handy installieren</div>
+          <h2 id="install-title">Als App-Symbol auf dem Startbildschirm</h2>
+          <p>Die App-Sammlung lässt sich wie eine normale App öffnen. Wähle dein Handy und folge der animierten Anleitung.</p>
+        </div>
+        <div class="install-badge" aria-hidden="true">⌂</div>
+      </div>
+
+      <div class="install-platforms" role="tablist" aria-label="Installationsanleitung auswählen">
+        <button id="install-ios-tab" class="install-platform active" type="button" role="tab" aria-selected="true" data-platform="ios">
+          <span class="platform-icon">●</span><span>iPhone</span>
+        </button>
+        <button id="install-android-tab" class="install-platform" type="button" role="tab" aria-selected="false" data-platform="android">
+          <span class="platform-icon">▲</span><span>Android</span>
+        </button>
+      </div>
+
+      <div class="install-demo" data-platform-view="ios">
+        <div class="phone-stage" aria-hidden="true">
+          <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div class="browser-bar"><span>AA</span><b>Hauckis Apps</b><span>↻</span></div>
+              <div class="mini-app"><img src="icon-192.png" alt=""><span>Hauckis App-Sammlung</span></div>
+              <div class="ios-actionbar">
+                <span>‹</span><span>›</span><span class="demo-target target-share">⇧</span><span>▱</span><span>▢</span>
+              </div>
+              <div class="share-sheet">
+                <div class="sheet-handle"></div>
+                <div class="sheet-row"><span>□</span><b>Zum Home-Bildschirm</b><span>›</span></div>
+                <div class="sheet-row add-row"><span>＋</span><b>Hinzufügen</b><span>✓</span></div>
+              </div>
+              <div class="home-result"><img src="icon-192.png" alt=""><span>Hauckis Apps</span></div>
+              <div class="tap-pulse"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="install-steps" data-steps="ios">
+          <button class="install-step active" type="button" data-step="0"><b>1</b><span><strong>Seite in Safari öffnen</strong><small>Die App-Sammlung ganz normal im Browser aufrufen.</small></span></button>
+          <button class="install-step" type="button" data-step="1"><b>2</b><span><strong>Teilen antippen</strong><small>Unten auf das Teilen-Symbol mit dem Pfeil tippen.</small></span></button>
+          <button class="install-step" type="button" data-step="2"><b>3</b><span><strong>„Zum Home-Bildschirm“ wählen</strong><small>Im Teilen-Menü nach unten scrollen und den Eintrag auswählen.</small></span></button>
+          <button class="install-step" type="button" data-step="3"><b>4</b><span><strong>„Hinzufügen“ bestätigen</strong><small>Danach liegt Hauckis App-Sammlung als eigenes Symbol auf dem Home-Bildschirm.</small></span></button>
+        </div>
+      </div>
+
+      <div class="install-demo hidden" data-platform-view="android">
+        <div class="phone-stage" aria-hidden="true">
+          <div class="phone-frame android-phone">
+            <div class="phone-camera"></div>
+            <div class="phone-screen">
+              <div class="android-bar"><span>⌂</span><b>Hauckis Apps</b><span class="demo-target target-menu">⋮</span></div>
+              <div class="mini-app"><img src="icon-192.png" alt=""><span>Hauckis App-Sammlung</span></div>
+              <div class="android-menu">
+                <div class="menu-row">Neuer Tab</div>
+                <div class="menu-row install-row">App installieren</div>
+                <div class="menu-row">Zum Startbildschirm hinzufügen</div>
+              </div>
+              <div class="android-confirm">
+                <img src="icon-192.png" alt=""><b>Hauckis App-Sammlung</b>
+                <span>INSTALLIEREN</span>
+              </div>
+              <div class="home-result android-result"><img src="icon-192.png" alt=""><span>Hauckis Apps</span></div>
+              <div class="tap-pulse"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="install-steps" data-steps="android">
+          <button class="install-step active" type="button" data-step="0"><b>1</b><span><strong>Seite in Chrome öffnen</strong><small>Hauckis App-Sammlung im Android-Browser aufrufen.</small></span></button>
+          <button class="install-step" type="button" data-step="1"><b>2</b><span><strong>Chrome-Menü öffnen</strong><small>Oben rechts auf die drei Punkte tippen.</small></span></button>
+          <button class="install-step" type="button" data-step="2"><b>3</b><span><strong>„App installieren“ wählen</strong><small>Je nach Chrome-Version kann dort auch „Zum Startbildschirm hinzufügen“ stehen.</small></span></button>
+          <button class="install-step" type="button" data-step="3"><b>4</b><span><strong>Installation bestätigen</strong><small>Das App-Symbol erscheint anschließend auf dem Startbildschirm.</small></span></button>
+        </div>
+        <button id="android-install-now" class="install-now hidden" type="button">Direkt installieren</button>
+      </div>
+
+      <div class="install-progress" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <div id="installed-note" class="installed-note hidden">✓ Diese App läuft bereits im installierten App-Modus.</div>
+    </section>
+
+    <section class="library-section">
+      <div class="section-title"><span>Bibliothek</span><span class="count">4 Apps</span></div>
+      <div class="app-grid">
+        <a class="app-card cube-card" href="cube.html">
+          <div class="app-icon cube-icon" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="app-card-text">
+            <div class="app-number">APP 01</div>
+            <h2>Zauberwürfel-Löser</h2>
+            <p>3×3×3 fotografieren, Farben prüfen und vollständig lokal lösen.</p>
+          </div>
+          <div class="open-arrow">›</div>
+        </a>
+
+        <a class="app-card sudoku-card" href="sudoku.html">
+          <div class="app-icon sudoku-icon" aria-hidden="true">9</div>
+          <div class="app-card-text">
+            <div class="app-number">APP 02</div>
+            <h2>Sudoku</h2>
+            <p>Sudoku des Tages, Zufallssudokus und Löser mit Einzelschritt-Hilfe.</p>
+          </div>
+          <div class="open-arrow">›</div>
+        </a>
+
+
+        <a class="app-card music-card" href="music.html">
+          <div class="app-icon music-icon" aria-hidden="true">♪</div>
+          <div class="app-card-text">
+            <div class="app-number">APP 03 · ONLINE</div>
+            <h2>Musikfinder</h2>
+            <p>Musikdateien und Kaufangebote aus öffentlichen Quellen finden – fehlertolerant und nach Preis sortiert.</p>
+          </div>
+          <div class="open-arrow">›</div>
+        </a>
+
+        <a class="app-card crossword-card" href="crossword.html">
+          <div class="app-icon crossword-icon" aria-hidden="true">✚</div>
+          <div class="app-card-text">
+            <div class="app-number">APP 04</div>
+            <h2>Kreuzworträtsel</h2>
+            <p>Zufällige und tägliche Kreuzworträtsel mit Lösungswort – vollständig lokal.</p>
+          </div>
+          <div class="open-arrow">›</div>
+        </a>
+      </div>
+    </section>
+
+    <section class="local-card">
+      <div class="shield">✓</div>
+      <div><b>Getrennte Netzwerknutzung</b><span>Zauberwürfel, Sudoku und Kreuzworträtsel bleiben lokal. Nur als „Online“ markierte Apps greifen zusätzlich auf freigegebene Internetquellen zu.</span></div>
+    </section>
+
+    <div class="legal-links"><a href="licenses.html">§ Lizenzen &amp; Quellen</a><a href="privacy.html">Datenschutz</a></div>
+    <div class="future-note">Platz für weitere möglicherweise nützliche Apps ist reserviert.</div>
+  </main>
+  <script src="install-guide.js"></script>
+  <script src="pwa.js"></script>
+</body>
+</html>

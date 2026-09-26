@@ -1,0 +1,10 @@
+Hauckis möglicherweise nützliche App-Sammlung
+
+Project-owned source code is licensed under the Apache License, Version 2.0,
+unless a file or directory states a different license. See LICENSE.
+
+Third-party software and data keep their own licenses. See
+Shared/www/THIRD_PARTY_LICENSES.txt and Shared/www/licenses.html.
+
+The application does not relicense media returned by external music services.
+Rights and license conditions shown by the respective source continue to apply.

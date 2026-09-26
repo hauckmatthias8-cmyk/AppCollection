@@ -1,0 +1,36 @@
+{
+  "catalog_version": 2,
+  "notes": "Großkatalog für App 04. Enthält den kuratierten/faktischen Starterbestand plus deduplizierte Synonymfragen aus einem OpenThesaurus-Textsnapshot; Quelldaten bleiben im Source lesbar und werden beim Publish gepackt.",
+  "sources": [
+    {
+      "id": "facts:countries",
+      "description": "Faktische Staat-/Hauptstadt-Paare; deutsche Ländernamen über Babel/CLDR beim Erzeugen des Starter-Katalogs.",
+      "license_note": "Fakten; keine übernommenen Fließtexte."
+    },
+    {
+      "id": "seed:curated",
+      "description": "Original formulierte Kreuzworträtselhinweise zu Allgemeinwissen, Naturwissenschaft, Technik, Kultur und lateinischen Begriffen.",
+      "license_note": "Im Projekt selbst erzeugt."
+    },
+    {
+      "id": "seed:synonym",
+      "description": "Kleine manuell zusammengestellte Synonymgruppen als Startbestand.",
+      "license_note": "Im Projekt selbst erzeugt."
+    },
+    {
+      "id": "openthesaurus",
+      "description": "Aktive Ausbauquelle für Synonymfragen. Verwendeter Textsnapshot: OpenThesaurus, erzeugt 2015-03-23, öffentlich gespiegelt in PSeitz/germansynonyms. Originalquelle openthesaurus.de.",
+      "url": "https://www.openthesaurus.de/about/download",
+      "license": "LGPL-2.1-or-later (Snapshot-Header); OpenThesaurus bietet aktuelle Daten alternativ unter CC BY-SA 4.0 oder LGPL an.",
+      "snapshot": "2015-03-23",
+      "active": true
+    },
+    {
+      "id": "dewiktionary",
+      "description": "Vorgesehene Ausbauquelle für Bedeutungsfragen und Fremdwörter.",
+      "url": "https://dumps.wikimedia.org/dewiktionary/",
+      "license": "CC BY-SA / GFDL gemäß Wiktionary-Hinweisen",
+      "active": false
+    }
+  ]
+}

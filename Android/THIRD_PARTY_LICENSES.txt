@@ -1,0 +1,45 @@
+Hauckis möglicherweise nützliche App-Sammlung includes cubejs 1.3.2 (https://github.com/ldez/cubejs) under the MIT License.
+
+Copyright (c) 2013-2017 Petri Lehtinen <petri@digip.org>
+Copyright (c) 2018 Ludovic Fernandez
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+
+OpenThesaurus data
+-------------------
+Crossword synonym data includes transformed relations from OpenThesaurus (https://www.openthesaurus.de/), imported from a text snapshot generated 2015-03-23. The snapshot is distributed under LGPL-2.1-or-later. The transformed crossword dataset is distributed under LGPL-2.1-or-later.
+OpenThesaurus is credited as the data source. Full license text is included both
+in Crossword/data/OPENTHESAURUS_LICENSE.txt (source package) and
+Shared/www/OPENTHESAURUS_LICENSE.txt (published app).
+
+
+External music services
+-----------------------
+The Musikfinder queries public endpoints of Wikimedia Commons, Internet Archive,
+ccMixter, Free To Use and Apple/iTunes. Media files, metadata and store offers
+remain subject to the terms and licenses of their respective providers. This
+project does not grant additional rights to third-party media.
+
+YouTube / YouTube Music
+-----------------------
+The app does not scrape YouTube, does not call unofficial YouTube proxy/search
+APIs and does not download YouTube content. It only creates ordinary user-facing
+search URLs from title/artist metadata already obtained from other sources. The
+YouTube request happens only after the user activates the external link.

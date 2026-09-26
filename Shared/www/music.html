@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#07111c">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; connect-src 'self' https://commons.wikimedia.org https://upload.wikimedia.org https://archive.org https://*.archive.org https://ccmixter.org https://api.freetouse.com https://freetouse.com https://*.freetouse.com; img-src 'self' data: blob: https://upload.wikimedia.org; style-src 'self'; script-src 'self' https://itunes.apple.com; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Hauckis Apps">
+  <link rel="stylesheet" href="music.css">
+  <title>Musikfinder</title>
+</head>
+<body>
+  <div id="music-splash" class="music-splash" role="button" tabindex="0" aria-label="Weiter">
+    <div class="music-splash-heart">♥</div>
+    <div class="music-splash-text" data-doc-private="true">Für meinen Papimaus 😘</div>
+    <div class="music-splash-sub">Zum Weitergehen tippen</div>
+  </div>
+  <main class="shell">
+    <div class="app-topbar">
+      <a class="home-link" href="index.html">‹ Bibliothek</a>
+      <span class="app-kicker online-kicker">App 03 · Online</span>
+    </div>
+
+    <header class="hero">
+      <div class="logo">♪</div>
+      <div>
+        <h1>Musikfinder</h1>
+        <p>Kostenlose Downloads und kostenpflichtige Musikangebote nach Titel und Interpret finden – ohne Anbieter-Login oder persönliche API-Zugangsdaten.</p>
+      </div>
+    </header>
+
+    <p class="web-search-warning">
+      WARNUNG! Hier wird eine extensive Web-Suche ausgelöst. Diese kann sich durch Datenvolumen fressen, wie der Matthi durch Kekse.
+      <a href="https://hauckmatthias8-cmyk.github.io/AppCollection/music.html" target="_blank" rel="noopener noreferrer">https://hauckmatthias8-cmyk.github.io/AppCollection/music.html</a>
+      ist auch von !jedem! Browser aus erreichbar.
+    </p>
+
+    <section class="card search-card">
+      <div class="mode-switch" role="group" aria-label="Suchmodus">
+        <button id="single-mode-btn" class="mode-btn active" type="button">Einzeltitel</button>
+        <button id="list-mode-btn" class="mode-btn" type="button">Titelliste</button>
+        <button id="advanced-mode-btn" class="mode-btn" type="button">Erweiterte Suche</button>
+      </div>
+
+      <div id="single-mode" class="search-mode">
+        <label>
+          <span>Titel</span>
+          <input id="title-input" type="text" autocomplete="off" autocapitalize="words"
+                 placeholder="z. B. Enter Sandman">
+        </label>
+        <label>
+          <span>Interpret</span>
+          <input id="artist-input" type="text" autocomplete="off" autocapitalize="words"
+                 placeholder="z. B. Metallica">
+        </label>
+      </div>
+
+      <div id="list-mode" class="search-mode hidden">
+        <label>
+          <span>Titelliste</span>
+          <textarea id="track-list-input" rows="9" autocomplete="off" autocapitalize="words"
+                    placeholder="Enter Sandman | Metallica&#10;Nothing Else Matters | Metallica&#10;Back in Black | AC/DC"></textarea>
+        </label>
+        <p class="format-hint">Eine Zeile pro Titel: <b>Titel | Interpret</b>. Tab, Semikolon und „Titel - Interpret“ werden ebenfalls erkannt. Doppelte Zeilen werden nur einmal gesucht. Lange Listen werden nacheinander verarbeitet und benötigen entsprechend mehr Zeit.</p>
+      </div>
+
+      <div id="advanced-mode" class="search-mode hidden">
+        <div class="advanced-kind-switch" role="group" aria-label="Erweiterte Suche">
+          <button id="advanced-title-btn" class="advanced-kind-btn active" type="button">Titel → Interpreten</button>
+          <button id="advanced-artist-btn" class="advanced-kind-btn" type="button">Interpret → Titel</button>
+        </div>
+        <label>
+          <span id="advanced-query-label">Titel (einer pro Zeile)</span>
+          <textarea id="advanced-query-input" rows="6" autocomplete="off" autocapitalize="words"
+                    placeholder="z. B. Hallelujah&#10;The Sound of Silence&#10;Nothing Else Matters"></textarea>
+        </label>
+        <p id="advanced-help" class="format-hint">
+          Findet für jeden eingegebenen Titel alle unterschiedlichen Interpreten, die in den eingebundenen Quellen gefunden werden. Ein Titel pro Zeile.
+          Die Zuordnung stammt ausschließlich aus den ausgewählten Musikkatalogen. Zu jedem gefundenen Ergebnis kann anschließend per Nutzerklick eine YouTube- oder YouTube-Music-Suche mit der gefundenen Schreibweise geöffnet werden.
+        </p>
+        <fieldset class="source-filter">
+          <div class="source-filter-head">
+            <legend>Quellen</legend>
+            <div class="source-filter-actions">
+              <button id="advanced-sources-all" type="button">Alle</button>
+              <button id="advanced-sources-none" type="button">Keine</button>
+            </div>
+          </div>
+          <div class="source-filter-grid">
+            <label class="source-check">
+              <input type="checkbox" data-advanced-source="itunes" checked>
+              <span>Apple / iTunes</span>
+            </label>
+            <label class="source-check">
+              <input type="checkbox" data-advanced-source="freetouse" checked>
+              <span>Free To Use</span>
+            </label>
+            <label class="source-check">
+              <input type="checkbox" data-advanced-source="ccmixter" checked>
+              <span>ccMixter</span>
+            </label>
+            <label class="source-check">
+              <input type="checkbox" data-advanced-source="commons" checked>
+              <span>Wikimedia Commons</span>
+            </label>
+            <label class="source-check">
+              <input type="checkbox" data-advanced-source="archive" checked>
+              <span>Internet Archive</span>
+            </label>
+          </div>
+        </fieldset>
+      </div>
+
+      <button id="search-btn" class="primary">3 günstigste Treffer suchen</button>
+      <p class="hint">
+        Kleine Schreibfehler werden toleriert. Bei einer Titelliste werden vollständige Warenkörbe gebildet:
+        ein Angebot pro gewünschtem Titel. Ein Bundle darf Angebote verschiedener Quellen kombinieren; ausgegeben werden
+        automatisch die drei günstigsten vollständigen Gesamtpreise. Die „Erweiterte Suche“ ermittelt dagegen alle
+        unterschiedlichen Interpreten zu einem Titel bzw. alle gefundenen Titel eines Interpreten.
+      </p>
+    </section>
+
+    <section class="source-card">
+      <div class="source-dot online"></div>
+      <div>
+        <b>Nur diese App nutzt das Internet</b>
+        <span>Zauberwürfel und Sudoku bleiben weiterhin lokal. Der Musikfinder fragt ausschließlich öffentliche, freigegebene Quellen ohne persönliche Zugangsdaten ab.</span>
+      </div>
+    </section>
+
+    <div id="status" class="status hidden"></div>
+    <section id="youtube-reference" class="youtube-reference hidden"></section>
+    <section id="results" class="results"></section>
+
+    <section class="card legal-card">
+      <h2>Wie die Treffer bewertet werden</h2>
+      <p>
+        Titel und Interpret werden fehlertolerant verglichen. Wenn der Server einen direkten Dateizugriff erlaubt,
+        prüft die App zusätzlich eingebettete Tags im Dateikopf (z. B. ID3/Vorbis). Ein bestätigter Widerspruch wird
+        nicht als Treffer angeboten.
+      </p>
+      <p>
+        Kostenlose Download-Treffer werden nur berücksichtigt, wenn die Quelle eine freie Lizenz bzw. Public-Domain-Kennzeichnung mitliefert.
+        Zusätzlich werden Kaufangebote aus dem Apple/iTunes-Katalog berücksichtigt. Bei Kaufangeboten kann die eigentliche Datei
+        vor dem Kauf nicht per Dateikopf geprüft werden; dort werden die Katalog-Metadaten verwendet.
+      </p>
+      <p>
+        Bei einer Einzelsuche werden maximal die drei günstigsten passenden Treffer angezeigt. Bei einer Titelliste berechnet
+        die App aus den gefundenen Einzelangeboten die drei günstigsten vollständigen Bundles. Jedes Bundle enthält genau ein
+        Angebot pro gewünschtem Titel und darf Quellen mischen. Preise stammen von der jeweiligen Quelle und können sich nachträglich ändern.
+      </p>
+      <p>
+        In der „Erweiterten Suche“ werden Treffer aus allen eingebundenen Katalogen zusammengeführt und Dubletten entfernt.
+        Bei „Titel → Interpreten“ wird nur der Titel fehlertolerant abgeglichen; bei „Interpret → Titel“ nur der Interpret.
+        Die Liste ist nicht auf drei Ergebnisse begrenzt. „Alle“ bedeutet dabei alle Treffer, die die derzeit eingebundenen
+        öffentlichen Quellen innerhalb ihrer jeweiligen Suchgrenzen liefern.
+      </p>
+      <p>
+        Bei kostenlosen Download-Treffern steht zusätzlich „Direkt prüfen“ zur Verfügung. Der Link öffnet die angebotene
+        Audiodatei direkt, damit Titel und Inhalt vor dem eigentlichen Download angehört bzw. geprüft werden können.
+      </p>
+
+      <p>
+        Aktive Download-/Kaufquellen: Wikimedia Commons, Internet Archive, ccMixter, Free To Use und Apple/iTunes.
+        YouTube wird nicht automatisch abgefragt und fließt nicht in die Preis- oder Bundleberechnung ein. Die App erzeugt lediglich normale YouTube-/YouTube-Music-Suchlinks aus der tatsächlich gefundenen Schreibweise von Titel und Interpret. Erst beim Anklicken wird der jeweilige YouTube-Dienst geöffnet.
+        Anbieter, die API-Key, OAuth, Login, Client-ID oder andere persönliche Zugangsdaten verlangen,
+        werden grundsätzlich nicht eingebunden.
+      </p>
+
+    <p><a class="music-legal-link" href="licenses.html">§ Lizenzen &amp; Quellen</a></p>
+    </section>
+  </main>
+
+  <template id="result-template">
+    <article class="result-card">
+      <div class="result-head">
+        <div>
+          <div class="source-name"></div>
+          <h2 class="result-title"></h2>
+          <div class="result-artist"></div>
+        </div>
+        <div class="result-badges"><div class="price-badge"></div><div class="match-score"></div></div>
+      </div>
+      <div class="meta-row">
+        <span class="license"></span>
+        <span class="file-type"></span>
+      </div>
+      <div class="verify-row">
+        <span class="verify-badge"></span>
+        <span class="verify-detail"></span>
+      </div>
+      <div class="result-actions">
+        <a class="preview-btn" target="_blank" rel="noopener noreferrer">Direkt prüfen</a>
+        <a class="download-btn" target="_blank" rel="noopener noreferrer">Download</a>
+        <a class="source-btn" target="_blank" rel="noopener noreferrer">Quelle</a>
+      </div>
+    </article>
+  </template>
+
+
+  <template id="bundle-template">
+    <article class="bundle-card">
+      <div class="bundle-head">
+        <div>
+          <div class="source-name bundle-rank"></div>
+          <h2 class="bundle-title">Bundle</h2>
+          <div class="bundle-subtitle"></div>
+        </div>
+        <div class="bundle-total"></div>
+      </div>
+      <div class="bundle-items"></div>
+    </article>
+  </template>
+
+  <script src="music-bundle.js"></script>
+  <script src="music-app.js"></script>
+  <script src="pwa.js"></script>
+</body>
+</html>

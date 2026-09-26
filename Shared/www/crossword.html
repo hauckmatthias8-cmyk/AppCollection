@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#0b1522">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Hauckis Apps">
+  <link rel="stylesheet" href="crossword.css">
+  <title>Kreuzworträtsel</title>
+</head>
+<body>
+  <main class="cw-shell">
+    <div class="topbar">
+      <a class="back-link" href="index.html">‹ Bibliothek</a>
+      <span class="kicker">App 04 · Offline</span>
+    </div>
+
+    <header class="cw-head">
+      <div class="cw-logo">✚</div>
+      <div>
+        <h1>Kreuzworträtsel</h1>
+        <p>Zufällig erzeugt, vollständig lokal und mit echtem Lösungswort.</p>
+      </div>
+    </header>
+
+    <section class="control-card">
+      <div class="control-title">Rätselgröße</div>
+      <div class="size-selector" role="group" aria-label="Rätselgröße">
+        <button type="button" class="size-btn active" data-size="normal" aria-pressed="true">
+          <b>Normal</b><span>15 × 20</span>
+        </button>
+        <button type="button" class="size-btn" data-size="large" aria-pressed="false">
+          <b>Groß</b><span>20 × 30</span>
+        </button>
+      </div>
+
+      <div class="daily-row">
+        <label for="cw-date">Datum</label>
+        <input id="cw-date" type="date">
+        <button id="daily-btn" type="button" class="primary-btn">Rätsel des Tages</button>
+      </div>
+
+      <button id="random-btn" type="button" class="random-btn">⟳ Zufälliges Kreuzworträtsel</button>
+      <div class="local-note">Fragenkatalog, Generator und Lösungswortliste laufen komplett auf diesem Gerät.</div>
+    </section>
+
+    <section id="game" class="game hidden">
+      <div class="game-head">
+        <div>
+          <h2 id="game-title">Kreuzworträtsel</h2>
+          <div id="game-subtitle"></div>
+        </div>
+        <button id="new-btn" type="button" class="small-btn">Neu</button>
+      </div>
+
+      <div class="toolbar">
+        <div class="zoom-group">
+          <button id="zoom-out" type="button" aria-label="Verkleinern">−</button>
+          <button id="zoom-fit" type="button">Einpassen</button>
+          <button id="zoom-in" type="button" aria-label="Vergrößern">+</button>
+          <span id="zoom-label">100 %</span>
+        </div>
+        <button id="check-btn" type="button" class="check-btn">Prüfen</button>
+      </div>
+
+      <div id="grid-scroll" class="grid-scroll">
+        <div id="crossword-grid" class="crossword-grid" aria-label="Kreuzworträtsel"></div>
+      </div>
+
+      <div id="active-clue" class="active-clue">Tippe ein weißes Feld oder eine Frage an.</div>
+
+      <section class="solution-card">
+        <div class="solution-head">
+          <div>
+            <b>Lösungswort</b>
+            <span>Die kleinen Nummern im Raster ergeben der Reihe nach ein reales Wort.</span>
+          </div>
+          <span id="solution-count"></span>
+        </div>
+        <div id="solution-progress" class="solution-progress"></div>
+      </section>
+
+      <div id="status" class="status">Rätsel bereit.</div>
+
+      <section class="clues">
+        <div class="clue-column">
+          <h3>Waagerecht</h3>
+          <div id="across-clues" class="clue-list"></div>
+        </div>
+        <div class="clue-column">
+          <h3>Senkrecht</h3>
+          <div id="down-clues" class="clue-list"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <input id="cw-keyboard" class="keyboard-catcher" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" maxlength="2" aria-hidden="true">
+
+  <div id="cw-busy" class="busy">
+    <div class="spinner"></div>
+    <div id="busy-label">Lokaler Fragenkatalog wird geladen …</div>
+  </div>
+
+  <script src="crossword-data.js"></script>
+  <script src="crossword-core.js"></script>
+  <script src="crossword-app.js"></script>
+  <script src="pwa.js"></script>
+</body>
+</html>
