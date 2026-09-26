@@ -32,9 +32,14 @@
           <h2 id="install-title">Als App-Symbol auf dem Startbildschirm</h2>
           <p>Die App-Sammlung lässt sich wie eine normale App öffnen. Wähle dein Handy und folge der animierten Anleitung.</p>
         </div>
-        <div class="install-badge" aria-hidden="true">⌂</div>
+        <button id="install-toggle" class="install-collapse-button" type="button" aria-expanded="false" aria-controls="install-details" aria-label="Installationsanleitung aufklappen">
+          <span class="install-badge" aria-hidden="true">⌂</span>
+          <span class="install-toggle-text">Anleitung anzeigen</span>
+          <span class="install-chevron" aria-hidden="true">⌄</span>
+        </button>
       </div>
 
+      <div id="install-details" class="install-details" hidden>
       <div class="install-platforms" role="tablist" aria-label="Installationsanleitung auswählen">
         <button id="install-ios-tab" class="install-platform active" type="button" role="tab" aria-selected="true" data-platform="ios">
           <span class="platform-icon">●</span><span>iPhone</span>
@@ -106,6 +111,7 @@
 
       <div class="install-progress" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
       <div id="installed-note" class="installed-note hidden">✓ Diese App läuft bereits im installierten App-Modus.</div>
+      </div>
     </section>
 
     <section class="library-section">

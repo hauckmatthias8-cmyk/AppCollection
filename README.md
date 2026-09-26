@@ -1,4 +1,4 @@
-﻿# Hauckis mÃ¶glicherweise nÃ¼tzliche App-Sammlung
+# Hauckis mÃ¶glicherweise nÃ¼tzliche App-Sammlung
 
 Multiplattform-Projekt mit einer gemeinsamen lokalen App-Codebasis. Der bevorzugte Releaseweg ist eine installierbare PWA Ã¼ber GitHub Pages; native Android- und iOS-HÃ¼llen bleiben als optionale Fallbacks erhalten.
 
@@ -153,6 +153,7 @@ Falls irgendwann nÃ¶tig: **Actions â†’ Build native Android + iOS manuall
 - Push eines `v*`-Tags: **kein Deployment**.
 - Zeitplan/Cron: **nicht vorhanden**.
 - PWA-Release: nur per manuellem GitHub-Actions-Start mit vorhandenem Version-Tag.
+- PWA-Release-Akteur: ausschließlich GitHub-Benutzer "hauckmatthias8-cmyk"; andere Benutzer werden im Workflow abgewiesen.
 - Native Releases: ebenfalls nur manuell.
 
 ## Version

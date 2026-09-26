@@ -51,4 +51,19 @@ import json
 (ROOT / "Shared/www/version.json").write_text(json.dumps({"version": version, "build": build}, indent=2) + "\n", encoding="utf-8")
 
 (ROOT / "VERSION").write_text(version + "\n", encoding="utf-8")
+
+# Sichtbare Versionsangabe in der README ebenfalls aktuell halten.
+readme = ROOT / "README.md"
+if readme.exists():
+    s = readme.read_text(encoding="utf-8-sig")
+    s2, n = re.subn(
+        r"Aktueller Projektstand:\s*\*\*\d+\.\d+\.\d+\s*/\s*Build\s+\d+\*\*\.",
+        f"Aktueller Projektstand: **{version} / Build {build}**.",
+        s,
+        count=1,
+    )
+    if n != 1:
+        die("README-Version konnte nicht eindeutig aktualisiert werden.")
+    readme.write_text(s2, encoding="utf-8")
+
 print(f"Version gesetzt: {version} (Build {build})")

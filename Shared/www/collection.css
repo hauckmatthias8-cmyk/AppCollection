@@ -38,3 +38,20 @@ h1{font-size:clamp(40.5px,10.5vw,57px)}
 .legal-shell{max-width:920px}.legal-back{display:inline-flex;min-height:52px;align-items:center;padding:10px 16px;border-radius:15px;border:1px solid #ffffff1a;background:#101c30;color:#fff;text-decoration:none;font-size:21px;font-weight:850}.legal-hero{margin-top:18px}.legal-info-card{margin-top:14px;padding:18px;border-radius:20px;background:#101b2c;border:1px solid #ffffff16}.legal-info-card h2{font-size:27px;margin:0 0 9px}.legal-info-card p{font-size:19px;line-height:1.52;color:#d9e2ee}.legal-info-card a{color:#6ee7ff;font-weight:800}.legal-info-card code{font-size:.92em;color:#ffe69b}.legal-links{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}.legal-links a{display:inline-flex;min-height:48px;align-items:center;padding:9px 14px;border-radius:14px;border:1px solid #ffffff1a;background:#101c30;color:#dfe9f6;text-decoration:none;font-weight:850}
 
 .privacy-content h1{font-size:34px;margin:0 0 8px}.privacy-content h2{font-size:25px;margin-top:24px}.privacy-content p{font-size:18px;line-height:1.55;color:#d9e2ee}.privacy-content b{color:#fff}
+
+
+/* Einklappbare PWA-Installationsanleitung: standardmaessig geschlossen. */
+.install-collapse-button{flex:none;min-width:168px;border:1px solid #ffffff1a;border-radius:18px;background:#0b1728;color:#eef6ff;padding:7px 9px 7px 7px;display:grid;grid-template-columns:58px auto 24px;align-items:center;gap:9px;cursor:pointer;text-align:left;box-shadow:inset 0 0 0 1px #0002;transition:border-color .2s ease,background .2s ease,transform .2s ease}
+.install-collapse-button:hover{background:#10213a;border-color:#6ee7ff55}
+.install-collapse-button:active{transform:scale(.985)}
+.install-collapse-button:focus-visible{outline:3px solid #6ee7ff88;outline-offset:3px}
+.install-collapse-button .install-badge{width:58px;height:58px}
+.install-toggle-text{font-size:16px;line-height:1.18;font-weight:900;color:#eaf4ff}
+.install-chevron{font-size:26px;line-height:1;text-align:center;color:var(--cyan);transition:transform .25s ease}
+.install-collapse-button[aria-expanded="true"] .install-chevron{transform:rotate(180deg)}
+.install-details[hidden]{display:none!important}
+.install-details{animation:install-details-open .22s ease-out}
+.install-card.install-collapsed{padding-bottom:18px}
+@keyframes install-details-open{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+@media(max-width:560px){.install-heading{align-items:center}.install-collapse-button{min-width:0;grid-template-columns:48px 22px;padding:6px}.install-collapse-button .install-badge{width:48px;height:48px;font-size:29px}.install-toggle-text{display:none}}
+@media(prefers-reduced-motion:reduce){.install-details{animation:none}.install-chevron{transition:none}}

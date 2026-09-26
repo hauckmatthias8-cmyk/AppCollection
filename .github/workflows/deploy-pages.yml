@@ -21,6 +21,17 @@ jobs:
   preflight:
     runs-on: ubuntu-24.04
     steps:
+      - name: Release-Berechtigung prüfen
+        shell: bash
+        env:
+          RELEASE_ALLOWED_ACTOR: hauckmatthias8-cmyk
+          RELEASE_ACTOR: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+          if [ "$RELEASE_ACTOR" != "$RELEASE_ALLOWED_ACTOR" ]; then
+            echo "::error::PWA-Releases dürfen nur von $RELEASE_ALLOWED_ACTOR gestartet werden. Aktueller Benutzer: $RELEASE_ACTOR"
+            exit 1
+          fi
       - name: Release-Tag auschecken
         uses: actions/checkout@v7
         with:
