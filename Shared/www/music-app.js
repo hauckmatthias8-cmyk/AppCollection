@@ -1507,8 +1507,8 @@
     advancedQueryLabel.textContent=byArtist?'Interpret':'Titel (einer pro Zeile)';
     advancedQueryInput.rows=byArtist?2:6;
     advancedQueryInput.placeholder=byArtist
-      ? 'z. B. Metallica'
-      : 'z. B. Hallelujah\nThe Sound of Silence\nNothing Else Matters';
+      ? 'z. B. Wolfgang Amadeus Mozart'
+      : 'z. B. Für Elise\nEine kleine Nachtmusik\nMondscheinsonate';
     advancedHelp.textContent=byArtist
       ? 'Findet alle unterschiedlichen Titel, die diesem Interpreten in den ausgewählten Musikkatalogen zugeordnet werden. Für jedes Ergebnis werden anschließend nur nutzerinitiierte YouTube-/YouTube-Music-Suchlinks erzeugt.'
       : 'Findet für jeden eingegebenen Titel alle unterschiedlichen Interpreten in den ausgewählten Musikkatalogen. Ein Titel pro Zeile; doppelte Zeilen werden nur einmal gesucht. Für jedes Ergebnis werden anschließend nur nutzerinitiierte YouTube-/YouTube-Music-Suchlinks erzeugt.';
