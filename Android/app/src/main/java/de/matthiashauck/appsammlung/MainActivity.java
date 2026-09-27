@@ -117,6 +117,8 @@ public final class MainActivity extends Activity {
                 || host.equals("youtube.com")
                 || host.equals("www.youtube.com")
                 || host.equals("music.youtube.com")
+                || host.equals("google.com")
+                || host.equals("www.google.com")
                 || host.equals("youtu.be")
                 || host.equals("api.freetouse.com")
                 || host.equals("freetouse.com")

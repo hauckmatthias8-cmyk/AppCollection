@@ -168,3 +168,5 @@ input:focus,textarea:focus{border-color:#6ee7ff88;box-shadow:0 0 0 3px #6ee7ff19
 }
 
 .music-legal-link{display:inline-flex;min-height:46px;align-items:center;padding:9px 13px;border-radius:13px;border:1px solid #ffffff1d;background:#17263c;color:#6ee7ff;text-decoration:none;font-weight:900}.license a{color:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
+
+.google-external-link{background:#182336!important;border-color:#7ca8ff44!important;color:#cfe0ff!important}

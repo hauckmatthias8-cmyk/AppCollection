@@ -252,6 +252,16 @@
     return `https://music.youtube.com/search?q=${encodeURIComponent(`${title} ${artist}`.trim())}`;
   }
 
+  function googleYouTubeSearchUrl(title, artist) {
+    const cleanTitle=String(title || '').trim();
+    const cleanArtist=String(artist || '').trim();
+    const parts=[];
+    if(cleanTitle) parts.push(`"${cleanTitle}"`);
+    if(cleanArtist) parts.push(`"${cleanArtist}"`);
+    parts.push('site:youtube.com/watch');
+    return `https://www.google.com/search?q=${encodeURIComponent(parts.join(' '))}`;
+  }
+
   function canonicalTrackFromOffers(offers, fallbackTitle, fallbackArtist) {
     const candidates=arrayify(offers)
       .filter(x=>String(x?.title || '').trim() && String(x?.artist || '').trim())
@@ -318,7 +328,20 @@
     if(canonicalSearchTitle || canonicalSearchArtist){
       s.title=`YouTube-Suche: ${[canonicalSearchTitle,canonicalSearchArtist].filter(Boolean).join(' – ')}`;
     }
-    actions.append(s);card.append(actions);
+    actions.append(s);
+
+    const google=document.createElement('a');
+    google.className='youtube-search-link google-youtube-search-link';
+    google.href=googleYouTubeSearchUrl(
+      ref?.canonicalTitle || wantedTitle,
+      ref?.canonicalArtist || wantedArtist
+    );
+    google.target='_blank';
+    google.rel='noopener noreferrer';
+    google.textContent='Google nach YouTube-Treffern';
+    actions.append(google);
+
+    card.append(actions);
     youtubeReferenceBox.append(card);youtubeReferenceBox.classList.remove('hidden');
   }
 
@@ -1406,6 +1429,14 @@
       ytWeb.textContent='YouTube suchen';
       actions.append(ytWeb);
 
+      const googleWeb=document.createElement('a');
+      googleWeb.className='discovery-action google-external-link';
+      googleWeb.href=googleYouTubeSearchUrl(ytTitle,ytArtist);
+      googleWeb.target='_blank';
+      googleWeb.rel='noopener noreferrer';
+      googleWeb.textContent='Google → YouTube';
+      actions.append(googleWeb);
+
       if(item.sourceUrls.length){
         const sourceLink=document.createElement('a');
         sourceLink.className='discovery-action';
@@ -1644,6 +1675,19 @@
       yt.rel='noopener noreferrer';
       yt.textContent='YouTube suchen';
       wrap.append(yt);
+    }
+
+    if(youtubeRef?.canonicalTitle || youtubeRef?.canonicalArtist){
+      const google=document.createElement('a');
+      google.className='bundle-youtube-link google-external-link';
+      google.href=googleYouTubeSearchUrl(
+        youtubeRef?.canonicalTitle || '',
+        youtubeRef?.canonicalArtist || ''
+      );
+      google.target='_blank';
+      google.rel='noopener noreferrer';
+      google.textContent='Google → YouTube';
+      wrap.append(google);
     }
     return wrap;
   }

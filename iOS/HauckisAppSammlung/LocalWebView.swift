@@ -54,6 +54,8 @@ struct LocalWebView: UIViewRepresentable {
                 || host == "youtube.com"
                 || host == "www.youtube.com"
                 || host == "music.youtube.com"
+                || host == "google.com"
+                || host == "www.google.com"
                 || host == "youtu.be"
                 || host == "api.freetouse.com"
                 || host == "freetouse.com"

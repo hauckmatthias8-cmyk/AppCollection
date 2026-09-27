@@ -85,6 +85,9 @@ if "commons.wikimedia.org" not in music_html or "archive.org" not in music_html 
 if "connect-src *" in music_html or "connect-src https:" in music_html:
     errors.append("Musikfinder-CSP ist zu weit gefasst.")
 music_js = read("Shared/www/music-app.js")
+for token in ["googleYouTubeSearchUrl","www.google.com/search","site:youtube.com/watch","Google → YouTube"]:
+    if token not in music_js:
+        errors.append(f"Musikfinder: externer Google-YouTube-Suchlink fehlt: {token}")
 android_main = read("Android/app/src/main/java/de/matthiashauck/appsammlung/MainActivity.java")
 ios_webview = read("iOS/HauckisAppSammlung/LocalWebView.swift")
 for required_host in ["commons.wikimedia.org", "archive.org", "itunes.apple.com", "ccmixter.org", "api.freetouse.com"]:
@@ -306,7 +309,7 @@ if "connect-src 'none'" not in licenses_html:
 privacy_html = read("Shared/www/privacy.html")
 if "Invidious" in privacy_html:
     errors.append("Datenschutzerklärung nennt noch entfernte Invidious-Dienste.")
-for token in ["Wikimedia Commons","Internet Archive","ccMixter","Free To Use","Apple/iTunes Store","YouTube und YouTube Music werden nicht automatisch abgefragt"]:
+for token in ["Wikimedia Commons","Internet Archive","ccMixter","Free To Use","Apple/iTunes Store","YouTube, YouTube Music und Google werden nicht automatisch abgefragt"]:
     if token not in privacy_html:
         errors.append(f"Datenschutzerklärung unvollständig: {token}")
 if 'href="privacy.html"' not in index:
