@@ -29,10 +29,10 @@ button,input{font:inherit}.hidden{display:none!important}
 .local-note{margin-top:10px;color:var(--muted);font-size:18px;line-height:1.4}
 .game{margin-top:20px}.game-head{margin-bottom:10px}.game-head h2{font-size:29px;margin:0}.game-head>div:first-child{min-width:0}
 #game-subtitle{font-size:18px;color:var(--muted);margin-top:2px}
-.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:9px}
-.zoom-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.zoom-group button,.check-btn{min-height:48px;border-radius:13px;border:1px solid #33445f;background:#15233a;color:#fff;padding:8px 12px;font-weight:850}
-#zoom-label{min-width:64px;text-align:center;font-size:17px;color:var(--muted)}
+.toolbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-bottom:9px}
+
+.check-btn{min-height:48px;border-radius:13px;border:1px solid #33445f;background:#15233a;color:#fff;padding:8px 12px;font-weight:850}
+
 .check-btn{background:#183226;border-color:#62e6a744;color:var(--ok)}
 .grid-scroll{width:100%;max-height:min(68vh,760px);overflow:auto;overscroll-behavior:contain;border:1px solid #33445f;border-radius:14px;background:#080d14;padding:10px;box-shadow:0 16px 42px #0007}
 .crossword-grid{display:grid;width:max-content;grid-template-columns:repeat(var(--cols),var(--cell));grid-template-rows:repeat(var(--rows),var(--cell));gap:1px;background:#293342;border:2px solid #293342;transform-origin:0 0}
@@ -67,5 +67,5 @@ button,input{font:inherit}.hidden{display:none!important}
   .clues{grid-template-columns:1fr}.cw-head h1{font-size:38px}.cw-head p{font-size:20px}
 }
 @media(max-width:500px){
-  .size-selector{grid-template-columns:1fr}.toolbar{align-items:flex-start;flex-direction:column}.check-btn{width:100%}
+  .size-selector{grid-template-columns:1fr}.check-btn{width:100%}
 }

@@ -1,8 +1,8 @@
 // BUILD: 27
-const APP_VERSION = '1.2.3';
+const APP_VERSION = '1.2.4';
 const CACHE = `hauckis-apps-${APP_VERSION}`;
 const ASSETS = [
-  './', './index.html', './collection.css', './install-guide.js', './pwa.js', './manifest.webmanifest', './version.json',
+  './', './index.html', './collection.css', './install-guide.js', './pwa.js', './app-zoom.js', './app-zoom.css', './manifest.webmanifest', './version.json',
   './icon-192.png', './icon-512.png',
   './cube.html', './cube.css', './cube-app.js', './cube.js', './solve.js',
   './sudoku.html', './sudoku.css', './sudoku-app.js', './sudoku-core.js',

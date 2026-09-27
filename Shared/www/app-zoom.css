@@ -1,0 +1,31 @@
+/* Globaler App-Zoom: ein Zoom fuer die komplette AppCollection.
+   Gesteuert per Zwei-Finger-Pinch; app-zoom.js setzt den Zoom direkt am <html>-Element. */
+html{
+  --haucki-app-zoom:1;
+  zoom:var(--haucki-app-zoom);
+}
+.app-zoom-indicator{
+  position:fixed;
+  left:50%;
+  top:max(12px,calc(env(safe-area-inset-top) + 8px));
+  z-index:2147483000;
+  transform:translateX(-50%);
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .16s ease;
+  padding:7px 12px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:999px;
+  background:rgba(8,17,29,.90);
+  color:#f7f8fb;
+  box-shadow:0 8px 24px rgba(0,0,0,.32);
+  -webkit-backdrop-filter:blur(10px);
+  backdrop-filter:blur(10px);
+  font:800 14px/1 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
+  font-variant-numeric:tabular-nums;
+}
+.app-zoom-indicator.visible{opacity:1}
+@media print{
+  html{zoom:1!important}
+  .app-zoom-indicator{display:none!important}
+}

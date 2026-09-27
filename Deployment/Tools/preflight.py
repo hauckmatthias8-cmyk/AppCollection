@@ -29,7 +29,9 @@ required = [
     "iOS/HauckisAppSammlung/Info.plist",
     "iOS/HauckisAppSammlung.xcodeproj/project.pbxproj",
     "Deployment/Store/privacy-policy.html",
-    "Shared/www/manifest.webmanifest", "Shared/www/sw.js", "Shared/www/pwa.js", "Shared/www/install-guide.js",
+    "Shared/www/manifest.webmanifest", "Shared/www/sw.js", "Shared/www/pwa.js",
+    "Shared/www/app-zoom.css",
+    "Shared/www/app-zoom.js", "Shared/www/install-guide.js",
     ".github/workflows/deploy-pages.yml", "Deployment/DOCUMENTATION_POLICY.md",
 ]
 for rel in required:
@@ -186,15 +188,65 @@ if "APP 04" not in index or 'href="crossword.html"' not in index:
     errors.append("App 04 fehlt in der Bibliothek.")
 if "connect-src 'none'" not in crossword_html:
     errors.append("Kreuzworträtsel ist nicht hart auf Offline-Betrieb begrenzt.")
-for token in ["15 × 20","20 × 30","Rätsel des Tages","zoom-in","zoom-out"]:
+for token in ["15 × 20","20 × 30","Rätsel des Tages"]:
     if token not in crossword_html:
         errors.append(f"Kreuzworträtsel-UI fehlt: {token}")
 for token in ["generatePuzzle","chooseSolutionMarks","puzzleSignature"]:
     if token not in crossword_core:
         errors.append(f"Kreuzworträtsel-Core fehlt: {token}")
-for token in ["daily|","fitZoom","solution-progress","crossword.progress."]:
+for token in ["daily|","solution-progress","crossword.progress."]:
     if token not in crossword_js and token not in crossword_html:
         errors.append(f"Kreuzworträtsel-App fehlt: {token}")
+
+
+# Ein einziger globaler App-Zoom für alle Seiten.
+app_zoom_js = read("Shared/www/app-zoom.js")
+app_zoom_css = read("Shared/www/app-zoom.css")
+
+for rel in [
+    "Shared/www/index.html",
+    "Shared/www/cube.html",
+    "Shared/www/sudoku.html",
+    "Shared/www/music.html",
+    "Shared/www/crossword.html",
+    "Shared/www/licenses.html",
+    "Shared/www/privacy.html",
+]:
+    page = read(rel)
+    if 'href="app-zoom.css"' not in page or 'src="app-zoom.js"' not in page:
+        errors.append(f"Globaler App-Zoom ist nicht eingebunden: {rel}")
+
+for token in [
+    "haucki.appZoom",
+    "touchstart",
+    "touchmove",
+    "gesturestart",
+    "gesturechange",
+    "wheel",
+    "--haucki-app-zoom",
+]:
+    if token not in app_zoom_js and token not in app_zoom_css:
+        errors.append(f"Globaler Pinch-Zoom unvollständig: {token}")
+
+# Es darf keinen zweiten, nur für das Kreuzworträtsel geltenden Zoom mehr geben.
+for forbidden in [
+    'id="zoom-in"',
+    'id="zoom-out"',
+    'id="zoom-fit"',
+    'id="zoom-label"',
+]:
+    if forbidden in crossword_html:
+        errors.append(f"Alter separater Kreuzworträtsel-Zoom noch vorhanden: {forbidden}")
+
+for forbidden in [
+    "function setZoom(",
+    "function fitZoom(",
+    "#zoom-in",
+    "#zoom-out",
+    "#zoom-fit",
+]:
+    if forbidden in crossword_js:
+        errors.append(f"Alte separate Kreuzworträtsel-Zoomlogik noch vorhanden: {forbidden}")
 
 # Klartext bleibt im Source, aber nicht im veröffentlichten Shared/www.
 for forbidden_name in ["crossword_catalog.tsv","solution_words.txt"]:

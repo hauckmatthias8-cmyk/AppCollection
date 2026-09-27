@@ -11,15 +11,15 @@
 
   const busy=$('#cw-busy'),busyLabel=$('#busy-label');
   const dateInput=$('#cw-date'),dailyBtn=$('#daily-btn'),randomBtn=$('#random-btn');
-  const game=$('#game'),gridEl=$('#crossword-grid'),gridScroll=$('#grid-scroll');
+  const game=$('#game'),gridEl=$('#crossword-grid');
   const acrossEl=$('#across-clues'),downEl=$('#down-clues');
   const activeClueEl=$('#active-clue'),statusEl=$('#status');
   const solutionEl=$('#solution-progress'),solutionCount=$('#solution-count');
   const gameTitle=$('#game-title'),gameSubtitle=$('#game-subtitle');
-  const keyboard=$('#cw-keyboard'),zoomLabel=$('#zoom-label');
+  const keyboard=$('#cw-keyboard');
 
   let data=null,puzzle=null,values={},selected=null,direction='across',sizeKey='normal';
-  let zoom=1,mode='random',modeDate='',currentSeed='';
+  let mode='random',modeDate='',currentSeed='';
 
   function setBusy(show,text=''){
     busy.classList.toggle('hidden',!show);
@@ -114,7 +114,6 @@
         ? `${niceDate(modeDate)} · ${cfg.label} · ${puzzle.placements.length} Begriffe`
         : `${cfg.label} · ${puzzle.placements.length} Begriffe`;
       render();
-      fitZoom();
       status('Tippe ein weißes Feld oder eine Frage an.');
       game.scrollIntoView({behavior:'smooth',block:'start'});
     }catch(err){
@@ -352,18 +351,6 @@
     else status(`Bis hierhin alles richtig. ${filled}/${total} Felder sind ausgefüllt.`,'good');
   }
 
-  function setZoom(next){
-    zoom=Math.max(.55,Math.min(1.75,next));
-    const px=Math.round(38*zoom);
-    gridEl.style.setProperty('--cell',`${px}px`);
-    zoomLabel.textContent=`${Math.round(zoom*100)} %`;
-  }
-  function fitZoom(){
-    if(!puzzle)return;
-    const available=Math.max(260,gridScroll.clientWidth-24);
-    const fit=Math.min(1,available/(puzzle.cols*39));
-    setZoom(Math.max(.55,fit));
-  }
 
   $$('.size-btn').forEach(btn=>btn.addEventListener('click',()=>{
     sizeKey=btn.dataset.size;
@@ -375,11 +362,6 @@
   randomBtn.addEventListener('click',()=>buildPuzzle('random'));
   $('#new-btn').addEventListener('click',()=>game.classList.add('hidden'));
   $('#check-btn').addEventListener('click',checkPuzzle);
-  $('#zoom-in').addEventListener('click',()=>setZoom(zoom+.10));
-  $('#zoom-out').addEventListener('click',()=>setZoom(zoom-.10));
-  $('#zoom-fit').addEventListener('click',fitZoom);
-  window.addEventListener('resize',()=>{if(puzzle&&zoom<=1)fitZoom();});
-
   async function init(){
     dateInput.value=todayLocal();
     try{
