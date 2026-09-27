@@ -11,7 +11,7 @@
 
   const busy=$('#cw-busy'),busyLabel=$('#busy-label');
   const dateInput=$('#cw-date'),dailyBtn=$('#daily-btn'),randomBtn=$('#random-btn');
-  const game=$('#game'),gridEl=$('#crossword-grid');
+  const game=$('#game'),gridEl=$('#crossword-grid'),gridScroll=$('#grid-scroll'),clueFloat=$('#clue-float');
   const acrossEl=$('#across-clues'),downEl=$('#down-clues');
   const activeClueEl=$('#active-clue'),statusEl=$('#status');
   const solutionEl=$('#solution-progress'),solutionCount=$('#solution-count');
@@ -107,7 +107,7 @@
         targetWords:cfg.targetWords,attempts:12
       });
       loadProgress();
-      selected=null;direction='across';
+      selected=null;direction='across';cluePeekKey=null;
       game.classList.remove('hidden');
       gameTitle.textContent=kind==='daily'?'Kreuzworträtsel des Tages':'Zufälliges Kreuzworträtsel';
       gameSubtitle.textContent=kind==='daily'
@@ -154,7 +154,7 @@
     return id==null?null:placementById(id);
   }
 
-  let cellRefs={},cellNumbers={};
+  let cellRefs={},cellNumbers={},cluePeekKey=null;
 
   function render(){
     if(!puzzle) return;
@@ -186,7 +186,15 @@
       cell.append(document.createTextNode(value));
 
       if(cellNumbers[k]){
-        const n=document.createElement('span');n.className='cell-number';n.textContent=cellNumbers[k];cell.append(n);
+        const n=document.createElement('span');
+        n.className='cell-number';
+        n.textContent=cellNumbers[k];
+        n.title=`Frage${placementsStartingAt(k).length===1?'':'n'} zu Nummer ${cellNumbers[k]} anzeigen`;
+        n.addEventListener('click',event=>{
+          event.stopPropagation();
+          showCluesForNumber(k);
+        });
+        cell.append(n);
       }
       if(puzzle.marksByCell[k]){
         const m=document.createElement('span');m.className='solution-mark';m.textContent=puzzle.marksByCell[k];cell.append(m);
@@ -198,6 +206,7 @@
     renderClues();
     renderSolution();
     updateActiveClue();
+    renderClueFloat();
   }
 
   function renderClues(){
@@ -247,6 +256,7 @@
   }
 
   function selectPlacement(p){
+    cluePeekKey=null;
     direction=p.dir;
     const dr=p.dir==='down'?1:0,dc=p.dir==='across'?1:0;
     let k=`${p.row},${p.col}`;
@@ -260,6 +270,7 @@
   function selectCell(k,toggle){
     if(!puzzle.grid[Number(k.split(',')[0])][Number(k.split(',')[1])]) return;
     const refs=cellRefs[k]||{};
+    if(cluePeekKey&&!peekCellKeys().has(k)) cluePeekKey=null;
     if(toggle&&selected===k&&refs.across!=null&&refs.down!=null){
       direction=direction==='across'?'down':'across';
     }else if(refs[direction]==null){
@@ -278,12 +289,208 @@
     el?.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'});
   }
 
-  function updateActiveClue(){
-    const p=selectedPlacement();
-    if(!p){activeClueEl.textContent='Tippe ein weißes Feld oder eine Frage an.';return;}
-    activeClueEl.textContent=`${p.number} ${p.dir==='across'?'waagerecht':'senkrecht'} · ${p.entry.q}`;
+  function placementsStartingAt(k){
+    if(!puzzle||!k) return [];
+    const [r,c]=k.split(',').map(Number);
+    return puzzle.placements
+      .filter(p=>p.row===r&&p.col===c)
+      .sort((a,b)=>{
+        if(a.dir===b.dir) return a.id-b.id;
+        return a.dir==='across'?-1:1;
+      });
   }
 
+  function placementCellKeys(p){
+    const dr=p.dir==='down'?1:0,dc=p.dir==='across'?1:0;
+    const out=[];
+    for(let i=0;i<p.entry.a.length;i++) out.push(`${p.row+dr*i},${p.col+dc*i}`);
+    return out;
+  }
+
+  function peekCellKeys(){
+    const keys=new Set();
+    for(const p of placementsStartingAt(cluePeekKey)){
+      for(const k of placementCellKeys(p)) keys.add(k);
+    }
+    return keys;
+  }
+
+  function showCluesForNumber(k){
+    const starts=placementsStartingAt(k);
+    if(!starts.length) return;
+    cluePeekKey=k;
+    selected=k;
+    if(!starts.some(p=>p.dir===direction)) direction=starts[0].dir;
+    render();
+  }
+
+  function selectPeekPlacement(p){
+    direction=p.dir;
+    selected=`${p.row},${p.col}`;
+    cluePeekKey=selected;
+    render();
+    focusKeyboard();
+    scrollSelectedIntoView();
+  }
+
+  function hideClueFloat(){
+    cluePeekKey=null;
+    clueFloat.classList.add('hidden');
+    clueFloat.innerHTML='';
+  }
+
+  function overlapArea(a,b){
+    const w=Math.max(0,Math.min(a.right,b.right)-Math.max(a.left,b.left));
+    const h=Math.max(0,Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top));
+    return w*h;
+  }
+
+  function positionClueFloat(){
+    if(!cluePeekKey||clueFloat.classList.contains('hidden')) return;
+    const startCell=gridEl.querySelector(`[data-key="${cluePeekKey}"]`);
+    if(!startCell) return;
+
+    const hostRect=gridScroll.getBoundingClientRect();
+    const toContent=el=>{
+      const r=el.getBoundingClientRect();
+      return {
+        left:r.left-hostRect.left+gridScroll.scrollLeft,
+        top:r.top-hostRect.top+gridScroll.scrollTop,
+        right:r.right-hostRect.left+gridScroll.scrollLeft,
+        bottom:r.bottom-hostRect.top+gridScroll.scrollTop
+      };
+    };
+
+    const start=toContent(startCell);
+    const reserved=[];
+    for(const k of peekCellKeys()){
+      const el=gridEl.querySelector(`[data-key="${k}"]`);
+      if(!el) continue;
+      const r=toContent(el);
+      reserved.push({left:r.left-4,top:r.top-4,right:r.right+4,bottom:r.bottom+4});
+    }
+
+    function findPosition(){
+      const w=clueFloat.offsetWidth,h=clueFloat.offsetHeight;
+      if(!w||!h) return null;
+
+      const pad=8;
+      const left=gridScroll.scrollLeft+pad;
+      const top=gridScroll.scrollTop+pad;
+      const right=gridScroll.scrollLeft+gridScroll.clientWidth-pad;
+      const bottom=gridScroll.scrollTop+gridScroll.clientHeight-pad;
+      const maxX=Math.max(left,right-w);
+      const maxY=Math.max(top,bottom-h);
+      const sx=(start.left+start.right)/2;
+      const sy=(start.top+start.bottom)/2;
+
+      const candidates=[];
+      const xs=[
+        Math.max(left,Math.min(maxX,start.left-w-8)),
+        Math.max(left,Math.min(maxX,start.right+8)),
+        left,maxX
+      ];
+      const ys=[
+        Math.max(top,Math.min(maxY,start.top-h-8)),
+        Math.max(top,Math.min(maxY,start.bottom+8)),
+        top,maxY
+      ];
+      for(const x of xs) for(const y of ys) candidates.push({x,y});
+
+      for(let y=top;y<=maxY;y+=10){
+        for(let x=left;x<=maxX;x+=10) candidates.push({x,y});
+      }
+
+      let best=null;
+      for(const c of candidates){
+        const box={left:c.x,top:c.y,right:c.x+w,bottom:c.y+h};
+        let overlap=0;
+        for(const r of reserved) overlap+=overlapArea(box,r);
+        if(overlap>0) continue;
+        const d=Math.hypot(c.x+w/2-sx,c.y+h/2-sy);
+        if(!best||d<best.d) best={x:c.x,y:c.y,d};
+      }
+      return best;
+    }
+
+    clueFloat.classList.remove('compact');
+    let best=findPosition();
+    if(!best){
+      clueFloat.classList.add('compact');
+      best=findPosition();
+    }
+
+    if(!best){
+      clueFloat.classList.add('hidden');
+      return;
+    }
+
+    clueFloat.style.left=`${Math.round(best.x)}px`;
+    clueFloat.style.top=`${Math.round(best.y)}px`;
+  }
+
+  function renderClueFloat(){
+    clueFloat.innerHTML='';
+    const starts=cluePeekKey?placementsStartingAt(cluePeekKey):[];
+    if(!starts.length){
+      clueFloat.classList.add('hidden');
+      return;
+    }
+
+    const head=document.createElement('div');
+    head.className='clue-float-head';
+
+    const number=document.createElement('b');
+    number.textContent=`Nr. ${cellNumbers[cluePeekKey]}`;
+
+    const close=document.createElement('button');
+    close.type='button';
+    close.className='clue-float-close';
+    close.textContent='×';
+    close.setAttribute('aria-label','Fragen ausblenden');
+    close.addEventListener('click',event=>{
+      event.stopPropagation();
+      hideClueFloat();
+    });
+
+    head.append(number,close);
+    clueFloat.append(head);
+
+    const active=selectedPlacement();
+    for(const p of starts){
+      const button=document.createElement('button');
+      button.type='button';
+      button.className='clue-float-option';
+      if(active?.id===p.id) button.classList.add('active');
+
+      const dir=document.createElement('span');
+      dir.className='clue-float-dir';
+      dir.textContent=p.dir==='across'?'Waagerecht':'Senkrecht';
+
+      const question=document.createElement('span');
+      question.className='clue-float-question';
+      question.textContent=p.entry.q;
+
+      button.append(dir,question);
+      button.addEventListener('click',event=>{
+        event.stopPropagation();
+        selectPeekPlacement(p);
+      });
+      clueFloat.append(button);
+    }
+
+    clueFloat.classList.remove('hidden');
+    requestAnimationFrame(positionClueFloat);
+  }
+
+  function updateActiveClue(){
+    const p=selectedPlacement();
+    if(!p){
+      activeClueEl.textContent='Tippe ein weißes Feld, eine kleine Nummer oder eine Frage an.';
+      return;
+    }
+    activeClueEl.textContent=`${p.number} ${p.dir==='across'?'waagerecht':'senkrecht'} · ${p.entry.q}`;
+  }
   function stepInPlacement(delta){
     const p=selectedPlacement();
     if(!p||!selected)return;
@@ -362,6 +569,9 @@
   randomBtn.addEventListener('click',()=>buildPuzzle('random'));
   $('#new-btn').addEventListener('click',()=>game.classList.add('hidden'));
   $('#check-btn').addEventListener('click',checkPuzzle);
+  gridScroll.addEventListener('scroll',()=>{if(cluePeekKey)positionClueFloat();},{passive:true});
+  window.addEventListener('resize',()=>{if(cluePeekKey)requestAnimationFrame(positionClueFloat);});
+
   async function init(){
     dateInput.value=todayLocal();
     try{

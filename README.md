@@ -159,7 +159,7 @@ Falls irgendwann nÃ¶tig: **Actions â†’ Build native Android + iOS manuall
 
 ## Version
 
-Aktueller Projektstand: **1.2.4 / Build 7**.
+Aktueller Projektstand: **1.2.5 / Build 8**.
 
 
 ## Lizenzierung und Quellen
