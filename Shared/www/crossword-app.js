@@ -270,7 +270,14 @@
   function selectCell(k,toggle){
     if(!puzzle.grid[Number(k.split(',')[0])][Number(k.split(',')[1])]) return;
     const refs=cellRefs[k]||{};
-    if(cluePeekKey&&!peekCellKeys().has(k)) cluePeekKey=null;
+
+    // Nicht nur die kleine Zahl selbst: Das komplette nummerierte Startfeld
+    // öffnet die zugehörige Floating-Fragenbox.
+    if(cellNumbers[k]){
+      cluePeekKey=k;
+    }else if(cluePeekKey&&!peekCellKeys().has(k)){
+      cluePeekKey=null;
+    }
     if(toggle&&selected===k&&refs.across!=null&&refs.down!=null){
       direction=direction==='across'?'down':'across';
     }else if(refs[direction]==null){
