@@ -199,49 +199,180 @@
   }
 
   function chooseSolutionMarks(grid,solutions,rng){
-    const counts=new Map(),cells=new Map();
+    const counts=new Map(),cells=new Map(),occupied=[];
     for(let r=0;r<grid.length;r++) for(let c=0;c<grid[0].length;c++){
       const ch=grid[r][c];
       if(!ch) continue;
       counts.set(ch,(counts.get(ch)||0)+1);
       if(!cells.has(ch)) cells.set(ch,[]);
       cells.get(ch).push({r,c});
+      occupied.push({r,c});
+    }
+    if(!occupied.length) return null;
+
+    const minR=Math.min(...occupied.map(x=>x.r));
+    const maxR=Math.max(...occupied.map(x=>x.r));
+    const minC=Math.min(...occupied.map(x=>x.c));
+    const maxC=Math.max(...occupied.map(x=>x.c));
+    const rowSpan=Math.max(1,maxR-minR);
+    const colSpan=Math.max(1,maxC-minC);
+    const distanceScale=Math.max(1,rowSpan+colSpan);
+
+    // 20 Zielbereiche über die gesamte belegte Rätsel-Fläche.
+    // Die Reihenfolge wird anschließend "farthest first" aufgebaut, damit schon
+    // die ersten 10–20 Lösungsbuchstaben möglichst weit auseinander liegen.
+    const solutionSpreadTargets=[];
+    for(const rf of [0,1/3,2/3,1]){
+      for(const cf of [0,0.25,0.5,0.75,1]){
+        solutionSpreadTargets.push({
+          r:minR+rf*rowSpan,
+          c:minC+cf*colSpan
+        });
+      }
+    }
+
+    function spreadTargetOrder(localRng){
+      const rest=localRng.shuffle(solutionSpreadTargets);
+      if(!rest.length) return [];
+      const ordered=[rest.shift()];
+      while(rest.length){
+        let bestIndex=0,bestScore=-Infinity;
+        for(let i=0;i<rest.length;i++){
+          const p=rest[i];
+          let nearest=Infinity;
+          for(const q of ordered){
+            const d=Math.abs(p.r-q.r)+Math.abs(p.c-q.c);
+            if(d<nearest) nearest=d;
+          }
+          const score=nearest+localRng.next()*0.0001;
+          if(score>bestScore){
+            bestScore=score;
+            bestIndex=i;
+          }
+        }
+        ordered.push(rest.splice(bestIndex,1)[0]);
+      }
+      return ordered;
+    }
+
+    function zoneOf(cell){
+      const zr=Math.max(0,Math.min(3,Math.floor(((cell.r-minR)/(rowSpan+0.000001))*4)));
+      const zc=Math.max(0,Math.min(4,Math.floor(((cell.c-minC)/(colSpan+0.000001))*5)));
+      return `${zr},${zc}`;
+    }
+
+    function coverageScore(marks,zones,localRng){
+      const rs=marks.map(x=>x.r),cs=marks.map(x=>x.c);
+      const rSpan=(Math.max(...rs)-Math.min(...rs))/rowSpan;
+      const cSpan=(Math.max(...cs)-Math.min(...cs))/colSpan;
+
+      let nearestSum=0;
+      for(let i=0;i<marks.length;i++){
+        let nearest=Infinity;
+        for(let j=0;j<marks.length;j++){
+          if(i===j) continue;
+          const d=(Math.abs(marks[i].r-marks[j].r)+Math.abs(marks[i].c-marks[j].c))/distanceScale;
+          if(d<nearest) nearest=d;
+        }
+        if(Number.isFinite(nearest)) nearestSum+=nearest;
+      }
+      const avgNearest=marks.length>1?nearestSum/marks.length:0;
+      const zoneCoverage=zones.size/Math.min(20,marks.length);
+
+      return rSpan*1.8+cSpan*1.8+zoneCoverage*0.8+avgNearest*0.8+localRng.next()*0.001;
     }
 
     const candidates=rng.shuffle(
       (solutions||[]).map(normalizeAnswer).filter(w=>w.length>=10&&w.length<=20)
     );
+
+    let best=null;
+
     for(const word of candidates){
       const need=new Map();
       for(const ch of word) need.set(ch,(need.get(ch)||0)+1);
-      let ok=true;
-      for(const [ch,n] of need) if((counts.get(ch)||0)<n){ok=false;break;}
-      if(!ok) continue;
-
-      const pools=new Map();
-      for(const [ch,list] of cells) pools.set(ch,rng.shuffle(list));
-      const used=new Set(),marks=[];
-      for(let i=0;i<word.length;i++){
-        const ch=word[i],pool=pools.get(ch)||[];
-        let chosen=null;
-        pool.sort((a,b)=>{
-          const ca=Math.abs(a.r-grid.length/2)+Math.abs(a.c-grid[0].length/2);
-          const cb=Math.abs(b.r-grid.length/2)+Math.abs(b.c-grid[0].length/2);
-          return (ca-cb)+(rng.next()-.5)*3;
-        });
-        for(const cell of pool){
-          const k=key(cell.r,cell.c);
-          if(!used.has(k)){ chosen=cell; break; }
+      let possible=true;
+      for(const [ch,n] of need){
+        if((counts.get(ch)||0)<n){
+          possible=false;
+          break;
         }
-        if(!chosen){ok=false;break;}
+      }
+      if(!possible) continue;
+
+      // Eigener deterministischer Zufallszweig pro Lösungswort, damit die
+      // Bewertung eines Kandidaten die folgenden Kandidaten nicht verzerrt.
+      const localRng=new RNG(Math.floor(rng.next()*0xFFFFFFFF)>>>0);
+      const targets=spreadTargetOrder(localRng);
+      const pools=new Map();
+      for(const [ch,list] of cells) pools.set(ch,localRng.shuffle(list));
+
+      const used=new Set(),usedZones=new Set(),marks=[];
+      let ok=true;
+
+      for(let i=0;i<word.length;i++){
+        const ch=word[i];
+        const pool=pools.get(ch)||[];
+        const target=targets[i%targets.length];
+        let chosen=null,bestCellScore=-Infinity;
+
+        for(const cell of pool){
+          const cellKey=key(cell.r,cell.c);
+          if(used.has(cellKey)) continue;
+
+          const targetDistance=(
+            Math.abs(cell.r-target.r)+Math.abs(cell.c-target.c)
+          )/distanceScale;
+
+          let separation=0;
+          if(marks.length){
+            separation=Infinity;
+            for(const mark of marks){
+              const d=(
+                Math.abs(cell.r-mark.r)+Math.abs(cell.c-mark.c)
+              )/distanceScale;
+              if(d<separation) separation=d;
+            }
+          }
+
+          const zone=zoneOf(cell);
+          const newZone=usedZones.has(zone)?0:1;
+
+          // Zielnähe sorgt für eine gleichmäßige Verteilung über das Raster,
+          // Mindestabstand verhindert lokale Klumpen; neue Bereiche erhalten
+          // einen zusätzlichen Bonus.
+          const score=
+            -1.8*targetDistance+
+             2.7*separation+
+             0.65*newZone+
+             localRng.next()*0.002;
+
+          if(score>bestCellScore){
+            bestCellScore=score;
+            chosen=cell;
+          }
+        }
+
+        if(!chosen){
+          ok=false;
+          break;
+        }
+
         used.add(key(chosen.r,chosen.c));
+        usedZones.add(zoneOf(chosen));
         marks.push({n:i+1,r:chosen.r,c:chosen.c,ch});
       }
-      if(ok) return {word,marks};
-    }
-    return null;
-  }
 
+      if(!ok) continue;
+
+      const score=coverageScore(marks,usedZones,localRng);
+      if(!best||score>best.score){
+        best={word,marks,score};
+      }
+    }
+
+    return best?{word:best.word,marks:best.marks}:null;
+  }
   function numberPlacements(placements){
     const starts=[...new Set(placements.map(p=>key(p.row,p.col)))]
       .map(k=>k.split(',').map(Number))

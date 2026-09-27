@@ -1,5 +1,5 @@
 {
-  "catalog_version": 6,
+  "catalog_version": 7,
   "notes": "Statischer Kreuzworträtsel-Katalog aus der vom Projektinhaber bereitgestellten Sammlung CWR.txt. Beim Import wurden ausschließlich exakte Frage-Antwort-Dubletten entfernt und Antworten technisch auf A-Z normalisiert. Unterschiedliche Hinweise für dieselbe Lösung sowie gleiche Hinweise mit unterschiedlichen Lösungen bleiben erhalten.",
   "sources": [
     {
