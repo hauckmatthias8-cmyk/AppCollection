@@ -130,7 +130,7 @@
     for(const e of entries||[]){
       const a=normalizeAnswer(e.a||e.answer);
       const q=String(e.q||e.clue||'').trim();
-      if(a.length<3||a.length>maxLen||!q) continue;
+      if(a.length<2||a.length>maxLen||!q) continue;
       const k=`${a}\u0000${q.toLowerCase()}`;
       if(seen.has(k)) continue;
       seen.add(k);
@@ -265,7 +265,7 @@
       const e=source[idx]||{};
       const a=normalizeAnswer(e.a||e.answer);
       const q=String(e.q||e.clue||'').trim();
-      if(a.length<3||a.length>maxLen||!q) continue;
+      if(a.length<2||a.length>maxLen||!q) continue;
       const k=`${a}\u0000${q.toLowerCase()}`;
       if(seenRows.has(k)) continue;
       seenRows.add(k);
@@ -276,7 +276,7 @@
       for(let i=0;i<source.length && out.length<wanted;i++){
         const e=source[(i+hash32(seed))%source.length]||{};
         const a=normalizeAnswer(e.a||e.answer),q=String(e.q||e.clue||'').trim();
-        if(a.length<3||a.length>maxLen||!q) continue;
+        if(a.length<2||a.length>maxLen||!q) continue;
         const k=`${a}\u0000${q.toLowerCase()}`;
         if(seenRows.has(k)) continue;
         seenRows.add(k);out.push({a,q,c:e.c||e.category||'',l:e.l||e.language||'de',d:Number(e.d||e.difficulty||2),s:e.s||e.source||''});

@@ -13,6 +13,7 @@ function parseTsv(file){
 }
 const entries=parseTsv(path.join(ROOT,'Crossword/data/crossword_catalog.tsv'));
 const solutions=fs.readFileSync(path.join(ROOT,'Crossword/data/solution_words.txt'),'utf8').split(/\r?\n/).filter(Boolean);
+if(!entries.some(e=>Core.normalizeAnswer(e.a).length===2)) throw new Error('Zwei-Buchstaben-Einträge fehlen im Katalog.');
 
 function check(rows,cols,target,seed){
   const a=Core.generatePuzzle(entries,solutions,rows,cols,seed,{targetWords:target,attempts:12});
@@ -34,7 +35,7 @@ function check(rows,cols,target,seed){
 
 const counts=[];
 for(const d of ['2026-01-01','2026-05-17','2026-09-26','2027-12-24']){
-  counts.push(check(15,20,36,`daily|${d}|normal|catalog:5`));
-  counts.push(check(20,30,58,`daily|${d}|large|catalog:5`));
+  counts.push(check(15,20,36,`daily|${d}|normal|catalog:6`));
+  counts.push(check(20,30,58,`daily|${d}|large|catalog:6`));
 }
 console.log(`Kreuzworträtsel-Test OK: Normal/Groß deterministisch, 10–20 Buchstaben Lösungswort, ${entries.length} Fragen / ${solutions.length} Lösungswörter. Begriffe/Test: ${counts.join(', ')}.`);

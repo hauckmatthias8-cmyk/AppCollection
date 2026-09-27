@@ -137,7 +137,7 @@ if "youtube.com" not in android_main or "youtube.com" not in ios_webview:
 
 # Lizenz-/Quellenhinweise müssen öffentlich erreichbar sein.
 licenses_html = read("Shared/www/licenses.html")
-for token in ["Apache License 2.0","cube.js 1.3.2","Faker","CountryInfo","MIT","YouTube/YouTube Music"]:
+for token in ["Apache License 2.0","cube.js 1.3.2","vom Projektinhaber bereitgestellten eigenen Sammlung","YouTube/YouTube Music"]:
     if token not in licenses_html:
         errors.append(f"Lizenzseite unvollständig: {token}")
 if 'href="licenses.html"' not in index:
@@ -221,8 +221,8 @@ try:
     import csv as _csv
     with (ROOT / "Crossword/data/crossword_catalog.tsv").open(encoding="utf-8", newline="") as _f:
         _rows = list(_csv.DictReader(_f, delimiter="\t"))
-    if len(_rows) != 30000:
-        errors.append(f"Kreuzworträtsel-Katalog muss exakt 30.000 Einträge enthalten: {len(_rows)}")
+    if len(_rows) != 7367:
+        errors.append(f"Kreuzworträtsel-Katalog muss exakt 7.367 Einträge enthalten: {len(_rows)}")
     _seen=set(); _dups=0
     for _r in _rows:
         _k=(re.sub(r"[^A-Z]", "", (_r.get("answer") or "").upper()), " ".join((_r.get("clue") or "").split()).casefold())

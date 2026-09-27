@@ -1,39 +1,11 @@
 {
-  "catalog_version": 5,
-  "notes": "Statischer Kreuzworträtsel-Katalog mit exakt 30.000 global eindeutigen normalisierten Antworten in 30 Kategorien mit je 1.000 Antworten. Kategorien sind Metadaten und nicht Bestandteil der angezeigten Hinweise.",
+  "catalog_version": 6,
+  "notes": "Statischer Kreuzworträtsel-Katalog aus der vom Projektinhaber bereitgestellten Sammlung CWR.txt. Beim Import wurden ausschließlich exakte Frage-Antwort-Dubletten entfernt und Antworten technisch auf A-Z normalisiert. Unterschiedliche Hinweise für dieselbe Lösung sowie gleiche Hinweise mit unterschiedlichen Lösungen bleiben erhalten.",
   "sources": [
     {
-      "id": "project:selfmade-core",
-      "description": "Projekt-eigene, neu formulierte klassische Kreuzworträtselhinweise.",
-      "license": "Apache-2.0",
-      "active": true
-    },
-    {
-      "id": "project:selfmade-expanded",
-      "description": "Projekt-eigene regelbasierte Erweiterungen aus dem selbst formulierten Grundstock.",
-      "license": "Apache-2.0",
-      "active": true
-    },
-    {
-      "id": "project:systematic-*",
-      "description": "Projekt-eigen regelbasiert erzeugte Zahl-, Einheiten-, Chemie-, Farb- und Musiktheorie-Hinweise.",
-      "license": "Apache-2.0",
-      "active": true
-    },
-    {
-      "id": "faker",
-      "description": "Lokale Faker-Referenzdaten für DE/AT/CH-Vornamen, Familiennamen und Berufe sowie internationale Städtenamen; die Hinweisformulierungen wurden im Projekt erzeugt.",
-      "url": "https://github.com/joke2k/faker",
-      "license": "MIT",
-      "version_used": "40.1.2",
-      "active": true
-    },
-    {
-      "id": "countryinfo",
-      "description": "Lokale CountryInfo-Referenzdaten für Verwaltungsgebiets-Namen; die Hinweisformulierungen wurden im Projekt erzeugt.",
-      "url": "https://github.com/porimol/countryinfo",
-      "license": "MIT",
-      "version_used": "0.1.2",
+      "id": "user:cwr",
+      "description": "Vom Projektinhaber bereitgestellte Kreuzworträtsel-Fragen-/Antwortsammlung CWR.txt.",
+      "license": "vom Projektinhaber bereitgestellt",
       "active": true
     }
   ]

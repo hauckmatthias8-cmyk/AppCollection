@@ -62,7 +62,7 @@ def load_payload():
         for row in reader:
             answer = norm(row["answer"])
             clue = " ".join(row["clue"].split())
-            if not 3 <= len(answer) <= 30 or not clue:
+            if not 2 <= len(answer) <= 30 or not clue:
                 continue
 
             key = (answer, clue.casefold())

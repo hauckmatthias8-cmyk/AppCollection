@@ -54,7 +54,8 @@ Multiplattform-Projekt mit einer gemeinsamen lokalen App-Codebasis. Der bevorzug
 - Klickbare waagerechte und senkrechte Fragen, Tastatureingabe und lokale Fortschrittsspeicherung.
 - Fragenkatalog und LÃ¶sungswortliste liegen im Source lesbar unter `Crossword/data/`.
 - Beim Build erzeugt `Deployment/Tools/build_crossword_data.py` daraus einen komprimierten und reversibel verschleierten Datencontainer `Shared/www/crossword-data.js`. Die Klartextdateien werden nicht unter `Shared/www` verÃ¶ffentlicht.
-- Der statische Offline-Katalog enthält **30.000 Frage-Antwort-Paare mit 30.000 global unterschiedlichen Lösungen**: 30 Kategorien mit jeweils 1.000 Lösungen.
+- Der statische Offline-Katalog enthält **7.367 unterschiedliche Frage-Antwort-Paare** aus der vom Projektinhaber bereitgestellten Sammlung mit **5.398 unterschiedlichen Lösungen**. Beim Import werden nur exakte Frage-Antwort-Dubletten entfernt.
+- Kurze klassische Rasterlösungen bleiben erhalten; der Import und die Layout-Engine unterstützen deshalb ausdrücklich Antworten ab **2 Buchstaben**.
 - Der Release greift für App 04 nicht auf das Internet zu: `validate_crossword_catalog.py` prüft den statischen Katalog, danach erzeugt `build_crossword_data.py` ausschließlich lokal den PWA-Datencontainer.
 
 
@@ -158,13 +159,13 @@ Falls irgendwann nÃ¶tig: **Actions â†’ Build native Android + iOS manuall
 
 ## Version
 
-Aktueller Projektstand: **1.2.0 / Build 3**.
+Aktueller Projektstand: **1.2.1 / Build 4**.
 
 
 ## Lizenzierung und Quellen
 
 - Projekt-eigener Code: Apache License 2.0 (`LICENSE`).
 - Drittanbieter-Code/-Daten behalten ihre eigene Lizenz; Ãœbersicht: `Shared/www/licenses.html` und `Shared/www/THIRD_PARTY_LICENSES.txt`.
-- Kreuzworträtsel-Referenzdaten: Teile der Namens-, Berufs-, Städte- und Verwaltungsgebietslisten basieren auf Faker/CountryInfo (MIT); die Lizenztexte bleiben im Paket.
+- Kreuzworträtsel-Katalog: vom Projektinhaber bereitgestellte Sammlung; keine Faker-/CountryInfo-/OpenThesaurus-/Wikidata-Daten werden für den aktuellen Katalog benötigt.
 - Musikfinder: Medien und Metadaten externer Quellen werden nicht durch dieses Projekt neu lizenziert. Der konkrete Quellen-/Lizenzlink bleibt maÃŸgeblich.
 - YouTube/YouTube Music werden nicht automatisiert abgefragt. Es werden ausschlieÃŸlich nutzerinitiierte Suchlinks aus bereits gefundenen Titel-/Interpret-Metadaten erzeugt.
