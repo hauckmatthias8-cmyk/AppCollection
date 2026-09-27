@@ -18,7 +18,7 @@ SOURCES = DATA / "sources.json"
 EXPECTED_ROWS = 7367
 EXPECTED_UNIQUE_ANSWERS = 5398
 EXPECTED_SOURCE = "user:cwr"
-EXPECTED_VERSION = 7
+EXPECTED_VERSION = 8
 
 REPL = {
     "Ä":"AE","Ö":"OE","Ü":"UE","ẞ":"SS","ß":"SS",

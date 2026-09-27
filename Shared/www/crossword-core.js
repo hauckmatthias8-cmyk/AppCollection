@@ -159,8 +159,16 @@
   function buildAttempt(entries,rows,cols,seed,targetWords){
     const rng=new RNG(seed);
     const grid=emptyGrid(rows,cols);
-    const shuffled=rng.shuffle(entries);
-    shuffled.sort((a,b)=>(b.a.length-a.a.length)+(rng.next()-.5)*2);
+    // Browseruebergreifend deterministisch: RNG nie im sort()-Comparator benutzen.
+    const shuffled=rng.shuffle(entries)
+      .map((entry,index)=>({entry,index,jitter:rng.next()}))
+      .sort((a,b)=>{
+        const len=b.entry.a.length-a.entry.a.length;
+        if(len) return len;
+        if(a.jitter!==b.jitter) return a.jitter-b.jitter;
+        return a.index-b.index;
+      })
+      .map(x=>x.entry);
     const placements=[];
     const usedAnswers=new Set();
 
